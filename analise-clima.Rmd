@@ -1,0 +1,56 @@
+---
+title: "Análise das variáveis climáticas na estação metereológica de Copacabana em 2022 e 2023"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+---
+
+O objetivo deste trabalho é comparar as variáveis climáticas entre os anos de 2023 e 2024 na estação metereológica do forte de Copacabana. Os dados utilizados foram obtidos no site do INMET, acessível [neste link](https://portal.inmet.gov.br/dadoshistoricos).
+
+```{r}
+library(tidyverse)
+```
+## Importando os dados de 2023
+
+```{r}
+dados_clima_2023 <- read_delim(file = "./Dados_Estacao_Copacabana/INMET_SE_RJ_A652_RIO DE JANEIRO - FORTE DE COPACABANA_01-01-2023_A_31-12-2023.CSV",delim = ";", locale = locale("pt", decimal_mark = ",", encoding = "UTF-8"))
+```
+## Importando os dados de 2022
+```{r}
+dados_clima_2022 <- read_delim(file = "./Dados_Estacao_Copacabana/INMET_SE_RJ_A652_RIO DE JANEIRO - FORTE DE COPACABANA_01-01-2022_A_31-12-2022.CSV",delim = ";", locale = locale("pt", decimal_mark = ",", encoding = "UTF-8"))
+```
+Os datasets possuem informações de clima de todas as estações do ano, iremos nos limitar a estação do outono, compreendida entre 20 de março e 21 de junho.
+
+```{r}
+inicio <- as.Date("2022-03-20")
+fim <- as.Date("2022-06-21")
+
+dados_clima_2022 <- dados_clima_2022[dados_clima_2022$Data >= inicio & dados_clima_2022$Data <= fim, ]
+
+inicio <- as.Date("2023-03-20")
+fim <- as.Date("2023-06-21")
+
+dados_clima_2023 <- dados_clima_2023[dados_clima_2023$Data >= inicio & dados_clima_2023$Data <= fim, ]
+```
+# Verificando os tipos de dados inferidos
+```{r}
+str(dados_clima_2023)
+```
+
+
+```{r}
+str(dados_clima_2022)
+```
+Foram verificadas em um momento inicial 2256 linhas e 20 colunas em 2022 e 2023. Procederemos agora para a verificação da quantidade de células válidas.
+
+```{r}
+num_celulas_validas <- sum(!is.na(dados_clima_2022))
+
+# Exibir o resultado formatado
+cat("O total de células válidas em 2022 é:", num_celulas_validas, "\n")
+
+```
+
+
+

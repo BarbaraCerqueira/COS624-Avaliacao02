@@ -1,0 +1,356 @@
+---
+title: "Análise do Perfil do Eleitorado para eleições municipais 2024"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+---
+
+O objetivo deste trabalho é comparar os Perfis do Eleitorado dos estados de Santa Catarina e Espírito Santo. Os dados utilizados foram obtidos no site do TSE, acessível [neste link](https://dadosabertos.tse.jus.br/pt_PT/dataset/eleitorado-atual).
+
+```{r}
+library(tidyverse)
+```
+
+
+## Carga dos Dados
+
+### Estado: Espírito Santo
+
+```{r}
+dados_eleitorado_es <- read_delim(file = "data/eleitorado/es/perfil_eleitor_secao_ATUAL_ES.csv",
+                                 delim = ";",
+                                 locale = locale("pt", decimal_mark = ",", encoding = "Latin1"))
+```
+
+```{r}
+dados_eleitorado_es
+```
+
+```{r}
+dim_dados <- dim(dados_eleitorado_es)
+celulas_com_dados = sum(!is.na(dados_eleitorado_es))
+
+print(paste("Número de Linhas: ", dim_dados[1]))
+print(paste("Número de Colunas: ", dim_dados[2]))
+print(paste("Número de Células com Dados: ", celulas_com_dados))
+```
+
+
+### Estado: Santa Catarina
+
+```{r}
+dados_eleitorado_sc <- read_delim(file = "data/eleitorado/sc/perfil_eleitor_secao_ATUAL_SC.csv",
+                                 delim = ";",
+                                 locale = locale("pt", decimal_mark = ",", encoding = "Latin1"))
+```
+
+```{r}
+dados_eleitorado_sc
+```
+
+```{r}
+dim_dados <- dim(dados_eleitorado_sc)
+celulas_com_dados = sum(!is.na(dados_eleitorado_sc))
+
+print(paste("Número de Linhas: ", dim_dados[1]))
+print(paste("Número de Colunas: ", dim_dados[2]))
+print(paste("Número de Células com Dados: ", celulas_com_dados))
+```
+
+
+## Transformações
+
+### Seleção de Colunas
+
+```{r}
+colunas_interesse <- c("NM_MUNICIPIO", "CD_GENERO", "DS_GENERO", 
+                       "CD_ESTADO_CIVIL", "DS_ESTADO_CIVIL", 
+                       "CD_FAIXA_ETARIA", "DS_FAIXA_ETARIA", 
+                       "CD_GRAU_ESCOLARIDADE", "DS_GRAU_ESCOLARIDADE", 
+                       "QT_ELEITORES_PERFIL")
+
+dados_selecionados_es <- select(dados_eleitorado_es, all_of(colunas_interesse))
+dados_selecionados_sc <- select(dados_eleitorado_sc, all_of(colunas_interesse))
+```
+
+```{r}
+print(paste("Espírito Santo - Número de Células com Dados Após Seleção: ", sum(!is.na(dados_selecionados_es))))
+print(paste("Santa Catarina - Número de Células com Dados Após Seleção: ", sum(!is.na(dados_selecionados_sc))))
+```
+
+
+### Filtragem dos Dados
+
+```{r}
+dados_filtrados_es <- filter(dados_selecionados_es, 
+                          DS_FAIXA_ETARIA != "Inválido", 
+                          NM_MUNICIPIO != "NÃO INFORMADO",
+                          DS_GENERO != "NÃO INFORMADO",
+                          DS_ESTADO_CIVIL != "NÃO INFORMADO",
+                          DS_GRAU_ESCOLARIDADE != "NÃO INFORMADO")
+
+dados_filtrados_sc <- filter(dados_selecionados_sc, 
+                          DS_FAIXA_ETARIA != "Inválido", 
+                          NM_MUNICIPIO != "NÃO INFORMADO",
+                          DS_GENERO != "NÃO INFORMADO",
+                          DS_ESTADO_CIVIL != "NÃO INFORMADO",
+                          DS_GRAU_ESCOLARIDADE != "NÃO INFORMADO")
+```
+
+```{r}
+cat("Espírito Santo:\n\n")
+print(paste("Número de Linhas Após Transformações: ", dim(dados_filtrados_es)[1]))
+print(paste("Número de Colunas Após Transformações: ", dim(dados_filtrados_es)[2]))
+print(paste("Número de Células com Dados Após Transformações: ", sum(!is.na(dados_filtrados_es))))
+
+cat("\n\nSanta Catarina:\n\n")
+print(paste("Número de Linhas Após Transformações: ", dim(dados_filtrados_sc)[1]))
+print(paste("Número de Colunas Após Transformações: ", dim(dados_filtrados_sc)[2]))
+print(paste("Número de Células com Dados Após Transformações: ", sum(!is.na(dados_filtrados_sc))))
+```
+
+
+## Análises dos Dados
+
+### Seleções de linhas que atendam critérios específicos
+
+```{r}
+criterios_es <- filter(dados_filtrados_es, 
+                     DS_GENERO == "MASCULINO", 
+                     DS_FAIXA_ETARIA == "35 a 39 anos", 
+                     DS_ESTADO_CIVIL == "CASADO", 
+                     DS_GRAU_ESCOLARIDADE == "ENSINO MÉDIO COMPLETO")
+
+total_eleitores_criterios_es <- sum(criterios_es$QT_ELEITORES_PERFIL)
+total_eleitores_geral_es <- sum(dados_filtrados_es$QT_ELEITORES_PERFIL)
+percentagem_es <- round((total_eleitores_criterios_es / total_eleitores_geral_es) * 100, 2)
+
+cat("Espírito Santo: \n\n")
+cat("Critério: Homens Casados de 35 a 39 anos com Ensino Médio Completo\n\n")
+
+print(paste("Número de Eleitores que Atendem ao Critério: ", total_eleitores_criterios_es))
+print(paste("Número Total de Eleitores: ", total_eleitores_geral_es))
+print(paste("O critério escolhido representa ", percentagem_es, "% dos eleitores do Espírito Santo."))
+```
+
+```{r}
+criterios_sc <- filter(dados_filtrados_sc, 
+                     DS_GENERO == "MASCULINO", 
+                     DS_FAIXA_ETARIA == "35 a 39 anos", 
+                     DS_ESTADO_CIVIL == "CASADO", 
+                     DS_GRAU_ESCOLARIDADE == "ENSINO MÉDIO COMPLETO")
+
+total_eleitores_criterios_sc <- sum(criterios_sc$QT_ELEITORES_PERFIL)
+total_eleitores_geral_sc <- sum(dados_filtrados_sc$QT_ELEITORES_PERFIL)
+percentagem_sc <- round((total_eleitores_criterios_sc / total_eleitores_geral_sc) * 100, 2)
+
+cat("Santa Catarina: \n\n")
+cat("Critério: Homens Casados de 35 a 39 anos com Ensino Médio Completo\n\n")
+
+print(paste("Número de Eleitores que Atendem ao Critério: ", total_eleitores_criterios_sc))
+print(paste("Número Total de Eleitores: ", total_eleitores_geral_sc))
+print(paste("O critério escolhido representa ", percentagem_sc, "% dos eleitores de Santa Catarina."))
+```
+
+
+### Tabelas com as contagens de eleitores por cada atributo categórico
+
+#### Eleitores por gênero
+
+```{r}
+# Calcular total de eleitores por gênero no ES
+contagem_genero_es <- dados_filtrados_es %>%
+  group_by(DS_GENERO) %>%
+  summarise(TOTAL_ELEITORES_ES = sum(QT_ELEITORES_PERFIL, na.rm = TRUE))
+
+# Calcular total de eleitores por gênero no SC
+contagem_genero_sc <- dados_filtrados_sc %>%
+  group_by(DS_GENERO) %>%
+  summarise(TOTAL_ELEITORES_SC = sum(QT_ELEITORES_PERFIL, na.rm = TRUE))
+
+contagem_genero <- full_join(contagem_genero_es, contagem_genero_sc, by = "DS_GENERO")
+
+print(contagem_genero)
+```
+
+```{r}
+ggplot(contagem_genero, aes(x = DS_GENERO, y = TOTAL_ELEITORES_ES, fill = DS_GENERO)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total de Eleitores por Gênero em ES", 
+       x = "Gênero", 
+       y = "Total de Eleitores") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(contagem_genero, aes(x = DS_GENERO, y = TOTAL_ELEITORES_SC, fill = DS_GENERO)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total de Eleitores por Gênero em SC", 
+       x = "Gênero", 
+       y = "Total de Eleitores") +
+  theme_minimal()
+```
+
+
+#### Eleitores por gênero e faixa etária
+
+```{r}
+contagem_genero_idade_es <- dados_filtrados_es %>%
+  group_by(DS_GENERO, DS_FAIXA_ETARIA) %>%
+  summarise(TOTAL_ELEITORES_ES = sum(QT_ELEITORES_PERFIL)) %>%
+  arrange(DS_GENERO, DS_FAIXA_ETARIA)
+
+contagem_genero_idade_sc <- dados_filtrados_sc %>%
+  group_by(DS_GENERO, DS_FAIXA_ETARIA) %>%
+  summarise(TOTAL_ELEITORES_SC = sum(QT_ELEITORES_PERFIL)) %>%
+  arrange(DS_GENERO, DS_FAIXA_ETARIA)
+
+contagem_genero_idade <- full_join(contagem_genero_idade_es, contagem_genero_idade_sc, by = c("DS_GENERO", "DS_FAIXA_ETARIA"))
+
+print(contagem_genero_idade)
+```
+
+```{r}
+ggplot(contagem_genero_idade, aes(x = DS_FAIXA_ETARIA, y = TOTAL_ELEITORES_ES, fill = DS_GENERO)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Eleitores por Gênero e Faixa Etária em ES", 
+       x = "Faixa Etária", 
+       y = "Total de Eleitores", 
+       fill = "Gênero") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+ggplot(contagem_genero_idade, aes(x = DS_FAIXA_ETARIA, y = TOTAL_ELEITORES_SC, fill = DS_GENERO)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Eleitores por Gênero e Faixa Etária em SC", 
+       x = "Faixa Etária", 
+       y = "Total de Eleitores", 
+       fill = "Gênero") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+ggplot(contagem_genero_idade, aes(x = DS_FAIXA_ETARIA, y = DS_GENERO, fill = TOTAL_ELEITORES_ES)) +
+  geom_tile() +
+  labs(title = "Mapa de Calor: Eleitores por Gênero e Faixa Etária em ES", 
+       x = "Faixa Etária", 
+       y = "Gênero", 
+       fill = "Total de Eleitores") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+ggplot(contagem_genero_idade, aes(x = DS_FAIXA_ETARIA, y = DS_GENERO, fill = TOTAL_ELEITORES_SC)) +
+  geom_tile() +
+  labs(title = "Mapa de Calor: Eleitores por Gênero e Faixa Etária em SC", 
+       x = "Faixa Etária", 
+       y = "Gênero", 
+       fill = "Total de Eleitores") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+#### Eleitores por município
+
+```{r}
+eleitores_por_municipio_es <- dados_filtrados_es %>%
+  group_by(NM_MUNICIPIO) %>%
+  summarise(TOTAL_ELEITORES_ES = sum(QT_ELEITORES_PERFIL, na.rm = TRUE))
+
+print(eleitores_por_municipio_es)
+```
+
+```{r}
+eleitores_por_municipio_sc <- dados_filtrados_sc %>%
+  group_by(NM_MUNICIPIO) %>%
+  summarise(TOTAL_ELEITORES_SC = sum(QT_ELEITORES_PERFIL, na.rm = TRUE))
+
+print(eleitores_por_municipio_sc)
+```
+
+
+#### Eleitores por estado civil
+
+```{r}
+eleitores_por_estado_civil_es <- dados_filtrados_es %>%
+  group_by(DS_ESTADO_CIVIL) %>%
+  summarise(TOTAL_ELEITORES_ES = sum(QT_ELEITORES_PERFIL))
+
+eleitores_por_estado_civil_sc <- dados_filtrados_sc %>%
+  group_by(DS_ESTADO_CIVIL) %>%
+  summarise(TOTAL_ELEITORES_SC = sum(QT_ELEITORES_PERFIL))
+
+eleitores_por_estado_civil <- full_join(eleitores_por_estado_civil_es, eleitores_por_estado_civil_sc, by = "DS_ESTADO_CIVIL")
+
+print(eleitores_por_estado_civil)
+```
+
+
+#### Eleitores por escolaridade
+
+```{r}
+eleitores_por_escolaridade_es <- dados_filtrados_es %>%
+  group_by(DS_GRAU_ESCOLARIDADE) %>%
+  summarise(TOTAL_ELEITORES_ES = sum(QT_ELEITORES_PERFIL))
+
+eleitores_por_escolaridade_sc <- dados_filtrados_sc %>%
+  group_by(DS_GRAU_ESCOLARIDADE) %>%
+  summarise(TOTAL_ELEITORES_SC = sum(QT_ELEITORES_PERFIL))
+
+eleitores_por_escolaridade <- full_join(eleitores_por_escolaridade_es, eleitores_por_escolaridade_sc, by = "DS_GRAU_ESCOLARIDADE")
+
+print(eleitores_por_escolaridade)
+```
+
+
+### Estatísticas Básicas
+
+Os datasets de Eleitorado são predominantemente formados por colunas categóricas, e portanto é difícil fazer análises estatísticas nesses dados. Sendo assim, aqui fizemos algumas análises voltadas especificamente para os municípios de cada estado, como por exemplo a média de eleitores ao longo dos municípios, o número máximo e mínimo de eleitores em um município, dentre outros.
+
+```{r}
+estatisticas_es <- eleitores_por_municipio_es %>%
+  summarise(
+    media_eleitores = mean(TOTAL_ELEITORES_ES, na.rm = TRUE),
+    mediana_eleitores = median(TOTAL_ELEITORES_ES, na.rm = TRUE),
+    max_eleitores = max(TOTAL_ELEITORES_ES, na.rm = TRUE),
+    min_eleitores = min(TOTAL_ELEITORES_ES, na.rm = TRUE),
+    desvio_padrao = sd(TOTAL_ELEITORES_ES, na.rm = TRUE)
+  ) %>%
+  mutate(estado = "ES")
+
+estatisticas_sc <- eleitores_por_municipio_sc %>%
+  summarise(
+    media_eleitores = mean(TOTAL_ELEITORES_SC, na.rm = TRUE),
+    mediana_eleitores = median(TOTAL_ELEITORES_SC, na.rm = TRUE),
+    max_eleitores = max(TOTAL_ELEITORES_SC, na.rm = TRUE),
+    min_eleitores = min(TOTAL_ELEITORES_SC, na.rm = TRUE),
+    desvio_padrao = sd(TOTAL_ELEITORES_SC, na.rm = TRUE)
+  ) %>%
+  mutate(estado = "SC")
+
+estatisticas <- bind_rows(estatisticas_es, estatisticas_sc)
+
+print(estatisticas)
+```
+
+
+### Respostas as Perguntas Sugeridas
+
+Aqui serão calculadas as respostas para as perguntas sugeridas no trabalho. São elas:
+
+- Qual o município com menos eleitores? 
+- Qual o município com mais eleitores, depois da capital? 
+- Qual a faixa de variação da quantidade de eleitores por município? 
+- Qual a faixa de variação da quantidade de eleitores por gênero?
+
+```{r}
+
+```
+
+

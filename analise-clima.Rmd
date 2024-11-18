@@ -47,10 +47,95 @@ Foram verificadas em um momento inicial 2256 linhas e 20 colunas em 2022 e 2023.
 ```{r}
 num_celulas_validas <- sum(!is.na(dados_clima_2022))
 
-# Exibir o resultado formatado
 cat("O total de células válidas em 2022 é:", num_celulas_validas, "\n")
 
+num_celulas_validas <- sum(!is.na(dados_clima_2023))
+
+cat("O total de células válidas em 2023 é:", num_celulas_validas, "\n")
+```
+## Filtragem das colunas
+Filtraremos as colunas informadas no enunciado + as colunas de data e hora para permitir as agregações
+```{r}
+colunas_desejadas <- c(
+  "PRECIPITAÇÃO TOTAL, HORÁRIO (mm)",
+  "PRESSAO ATMOSFERICA AO NIVEL DA ESTACAO, HORARIA (mB)",
+  "PRESSÃO ATMOSFERICA MAX.NA HORA ANT. (AUT) (mB)",
+  "PRESSÃO ATMOSFERICA MIN. NA HORA ANT. (AUT) (mB)",
+  "TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)",
+  "TEMPERATURA MÁXIMA NA HORA ANT. (AUT) (°C)",
+  "TEMPERATURA MÍNIMA NA HORA ANT. (AUT) (°C)",
+  "VENTO, DIREÇÃO HORARIA (gr) (° (gr))",
+  "VENTO, RAJADA MAXIMA (m/s)",
+  "VENTO, VELOCIDADE HORARIA (m/s)",
+  "Data",
+  "Hora UTC"
+)
+
+dados_clima_2022 <- dados_clima_2022[, colunas_desejadas]
+dados_clima_2023 <- dados_clima_2023[, colunas_desejadas]
 ```
 
+Verificaremos o total de linhas, colunas e células válidas
+
+```{r}
+num_linhas <- nrow(dados_clima_2022)
+
+num_colunas <- ncol(dados_clima_2022)
+
+num_celulas_validas <- sum(!is.na(dados_clima_2022))
+
+cat(
+  "Sumário do dataframe 2022:\n",
+  "Número de linhas:", num_linhas, "\n",
+  "Número de colunas:", num_colunas, "\n",
+  "Número de células válidas:", num_celulas_validas, "\n"
+)
+
+num_linhas <- nrow(dados_clima_2023)
+
+num_colunas <- ncol(dados_clima_2023)
+
+num_celulas_validas <- sum(!is.na(dados_clima_2023))
+
+cat(
+  "Sumário do dataframe 2023:\n",
+  "Número de linhas:", num_linhas, "\n",
+  "Número de colunas:", num_colunas, "\n",
+  "Número de células válidas:", num_celulas_validas, "\n"
+)
+```
+## Filtragem de linhas vazias
+
+Usaremos filter() do pacote dplyr para remover todas as linhas com ao menos um valor Na, o que convenienetemente é feito usando o complete.cases(.).
+
+```{r}
+library(dplyr)
+
+# Remover linhas com pelo menos um NA
+dados_clima_2022 <- dados_clima_2022 %>%
+  filter(complete.cases(.))
+
+# Verificar o resultado
+cat("Número de linhas do dataframe 2022 após remoção de NAs:", nrow(dados_clima_2022), "\n")
+
+# Remover linhas com pelo menos um NA
+dados_clima_2023 <- dados_clima_2023 %>%
+  filter(complete.cases(.))
+
+# Verificar o resultado
+cat("Número de linhas do dataframe 2023 após remoção de NAs:", nrow(dados_clima_2023), "\n")
+
+
+```
+```{r}
+tem_na <- any(is.na(dados_clima_2023))
+
+if (tem_na) {
+  cat("Ainda existem valores NA no dataframe.\n")
+} else {
+  cat("Todos os valores NA foram removidos com sucesso.\n")
+}
+
+```
 
 

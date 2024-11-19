@@ -22,17 +22,6 @@ dados_clima_2022 <- read_delim(file = "./Dados_Estacao_Copacabana/INMET_SE_RJ_A6
 ```
 Os datasets possuem informações de clima de todas as estações do ano, iremos nos limitar a estação do outono, compreendida entre 20 de março e 21 de junho.
 
-```{r}
-inicio <- as.Date("2022-03-20")
-fim <- as.Date("2022-06-21")
-
-dados_clima_2022 <- dados_clima_2022[dados_clima_2022$Data >= inicio & dados_clima_2022$Data <= fim, ]
-
-inicio <- as.Date("2023-03-20")
-fim <- as.Date("2023-06-21")
-
-dados_clima_2023 <- dados_clima_2023[dados_clima_2023$Data >= inicio & dados_clima_2023$Data <= fim, ]
-```
 # Verificando os tipos de dados inferidos
 ```{r}
 str(dados_clima_2023)
@@ -42,7 +31,7 @@ str(dados_clima_2023)
 ```{r}
 str(dados_clima_2022)
 ```
-Foram verificadas em um momento inicial 2256 linhas e 20 colunas em 2022 e 2023. Procederemos agora para a verificação da quantidade de células válidas.
+Foram verificadas em um momento inicial 8,760 linhas e 20 colunas em 2022 e 2023. Procederemos agora para a verificação da quantidade de células válidas.
 
 ```{r}
 num_celulas_validas <- sum(!is.na(dados_clima_2022))
@@ -138,4 +127,155 @@ if (tem_na) {
 
 ```
 
+```{r}
+dados_clima_2022 <- dados_clima_2022 %>%
+  mutate(`Hora UTC` = as.numeric(substr(`Hora UTC`, 1, 2)))
+```
+
+```{r}
+dados_clima_2023 <- dados_clima_2023 %>%
+  mutate(`Hora UTC` = as.numeric(substr(`Hora UTC`, 1, 2)))
+```
+Agora, tomaremos a faixa de valores de horário entre 9 e 15 (Parte da tarde em UTC - 3) e em seguida calcularemos as temperaturas máxima, mínima e média do períodoem ambos os anos.
+
+```{r}
+slice_df <- dados_clima_2022 %>%
+  filter(`Hora UTC` >= 9 & `Hora UTC` <= 15)
+
+resultados <- slice_df %>%
+  summarise(
+    Minimo = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maximo = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Media = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE)
+  )
+print(resultados)
+```
+
+```{r}
+slice_df <- dados_clima_2023 %>%
+  filter(`Hora UTC` >= 9 & `Hora UTC` <= 15)
+
+resultados <- slice_df %>%
+  summarise(
+    Minimo = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maximo = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Media = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE)
+  )
+print(resultados)
+```
+Agora precisamos calcular todas as estatísticas básicas de cada coluna dos dataframes, e para isso:
+
+```{r}
+library(tidyr)
+
+calcula_moda <- function(x) {
+  unique_x <- unique(x)
+  unique_x[which.max(tabulate(match(x, unique_x)))]
+}
+
+estatisticas <- dados_clima_2022 %>%
+  select(where(is.numeric)) %>%  # Seleciona apenas colunas numéricas
+  summarise(across(
+    everything(),
+    list(
+      Media = ~ mean(.x, na.rm = TRUE),
+      Mediana = ~ median(.x, na.rm = TRUE),
+      Moda = ~ calcula_moda(.x),
+      Minimo = ~ min(.x, na.rm = TRUE),
+      Maximo = ~ max(.x, na.rm = TRUE),
+      Intervalo = ~ max(.x, na.rm = TRUE) - min(.x, na.rm = TRUE),
+      DesvioPadrao = ~ sd(.x, na.rm = TRUE)
+    ),
+    .names = "{.col}_{.fn}"
+  )) %>%
+  pivot_longer(cols = everything(), 
+               names_to = c("Variavel", "Estatistica"), 
+               names_sep = "_", 
+               values_to = "Valor") %>%
+  pivot_wider(names_from = Estatistica, values_from = Valor)
+
+estatisticas
+```
+Repetindo a mesma coisa para 2023:
+
+```{r}
+estatisticas <- dados_clima_2023 %>%
+  select(where(is.numeric)) %>%  # Seleciona apenas colunas numéricas
+  summarise(across(
+    everything(),
+    list(
+      Media = ~ mean(.x, na.rm = TRUE),
+      Mediana = ~ median(.x, na.rm = TRUE),
+      Moda = ~ calcula_moda(.x),
+      Minimo = ~ min(.x, na.rm = TRUE),
+      Maximo = ~ max(.x, na.rm = TRUE),
+      Intervalo = ~ max(.x, na.rm = TRUE) - min(.x, na.rm = TRUE),
+      DesvioPadrao = ~ sd(.x, na.rm = TRUE)
+    ),
+    .names = "{.col}_{.fn}"
+  )) %>%
+  pivot_longer(cols = everything(), 
+               names_to = c("Variavel", "Estatistica"), 
+               names_sep = "_", 
+               values_to = "Valor") %>%
+  pivot_wider(names_from = Estatistica, values_from = Valor)
+
+estatisticas
+```
+
+```{r}
+library(lubridate)
+
+dados_clima_2022 <- dados_clima_2022 %>%
+  mutate(datetime = ymd_h(paste(Data, `Hora UTC`)))
+
+agrupamento_diario_2022 <- dados_clima_2022 %>%
+  group_by(dia = floor_date(datetime, "day")) %>%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_semanal_2022 <- dados_clima_2022 %>%
+  group_by(semana = floor_date(datetime, "week")) %>%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_mensal_2022 <- dados_clima_2022 %>%
+  group_by(mes = floor_date(datetime, "month")) %>%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_bimestral_2022 <- dados_clima_2022 %>%
+  group_by(bimestre = cut(datetime, breaks = "2 months", labels = FALSE)) %>%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_semestral_2022 <- dados_clima_2022 %>%
+  group_by(semestre = semester(datetime)) %>%  # Define o semestre com lubridate
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_mensal_2022
+```
+
+```{r}
+dados_clima_2023 <- dados_clima_2023 %>%
+  mutate(datetime = ymd_h(paste(Data, `Hora UTC`)))
+
+agrupamento_diario_2023 <- dados_clima_2023 %>%
+  group_by(dia = floor_date(datetime, "day")) %>%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_semanal_2023 <- dados_clima_2023 %>%
+  group_by(semana = floor_date(datetime, "week")) %>%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_mensal_2023 <- dados_clima_2023 %>%
+  group_by(mes = floor_date(datetime, "month")) %>%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_bimestral_2023 <- dados_clima_2023 %>%
+  group_by(bimestre = cut(datetime, breaks = "2 months", labels = FALSE)) %>%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_semestral_2023 <- dados_clima_2023 %>%
+  group_by(semestre = semester(datetime)) %>%  # Define o semestre com lubridate
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_semestral_2023
+```
 

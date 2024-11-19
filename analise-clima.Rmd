@@ -126,7 +126,9 @@ if (tem_na) {
 }
 
 ```
+## Analise 1
 
+Para facilitar a filtragem, vamos transformar o campo Hora UTC em um valor numérico.
 ```{r}
 dados_clima_2022 <- dados_clima_2022 %>%
   mutate(`Hora UTC` = as.numeric(substr(`Hora UTC`, 1, 2)))
@@ -163,6 +165,7 @@ resultados <- slice_df %>%
   )
 print(resultados)
 ```
+## Análise 2
 Agora precisamos calcular todas as estatísticas básicas de cada coluna dos dataframes, e para isso:
 
 ```{r}
@@ -222,7 +225,9 @@ estatisticas <- dados_clima_2023 %>%
 
 estatisticas
 ```
+## Análise 3
 
+Para calcularmos os agrupamentos estabelecidos no enunciado, uilizaremos uma agrupamento sobre uma função de floor_date, que arredonda uma data para um intervalo especificado, e em seguida realiza a agregação sobre esses valores já arredondados.
 ```{r}
 library(lubridate)
 
@@ -276,6 +281,7 @@ agrupamento_semestral_2023 <- dados_clima_2023 %>%
   group_by(semestre = semester(datetime)) %>%  # Define o semestre com lubridate
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
 ```
+## Análise 4
 De posse dos agrupamentos, devemos agora calcular as estatísticas para a comparação entre os anos. Como as comparações serão feitas entre os anos, vale mais a pena calcular as estatísticas do agrupamento diário na coluna de interesse TEMPERATURA DO AR - BULBO SECO, HORARIA (°C).
 
 ```{r}
@@ -302,7 +308,8 @@ estatisticas_diarias
 ```
 Conforme observado na tabela, o ano de 2023 foi na média mais quente que o de 2022, embora 2022 tenha tido uma maior temperatura máxima.
 
-Agora seguindo a próxima tarefa, vamos criar agrupamentos com a temperatura máxima, mínima e média dos períodos de tempo.
+## Análise 5
+Agora seguindo a próxima tarefa, vamos criar agrupamentos com a temperatura máxima, mínima e média dos períodos de tempo. O esforço é extremamente semelhante ao caso anterior, mas ao invés de percorrermos todas as colunas e tormarmos a média, basta utilizar a coluna de temperatura e calcular média, máximo e mínimo.
 
 ```{r}
 agrupamento_diario_2023 <- dados_clima_2023 %>%
@@ -397,6 +404,8 @@ agrupamento_semestral_2022 <- dados_clima_2022 %>%
 
 agrupamento_diario_2022
 ```
+## Análise 6
+
 Já verificamos que o ano de 2023 foi mais quente em média, agora nos resta verficar quais foram os meses mais quentes. Podemos verificar facilmente usando o último agrupamento mensal.
 
 ```{r}

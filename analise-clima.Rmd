@@ -275,7 +275,169 @@ agrupamento_bimestral_2023 <- dados_clima_2023 %>%
 agrupamento_semestral_2023 <- dados_clima_2023 %>%
   group_by(semestre = semester(datetime)) %>%  # Define o semestre com lubridate
   summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
-
-agrupamento_semestral_2023
 ```
+De posse dos agrupamentos, devemos agora calcular as estatísticas para a comparação entre os anos. Como as comparações serão feitas entre os anos, vale mais a pena calcular as estatísticas do agrupamento diário na coluna de interesse TEMPERATURA DO AR - BULBO SECO, HORARIA (°C).
+
+```{r}
+agrupamento_diario_2022 <- agrupamento_semanal_2022 %>%
+  mutate(ano = 2022)
+
+agrupamento_diario_2023 <- agrupamento_semanal_2023 %>%
+  mutate(ano = 2023)
+
+agrupamento_diario <- bind_rows(agrupamento_diario_2022, agrupamento_diario_2023)
+
+estatisticas_diarias <- agrupamento_diario %>%
+  group_by(ano) %>%  # Agrupar por ano
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Mediana_Temperatura = median(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minimo_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maximo_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Desvio_Temperatura = sd(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+estatisticas_diarias
+```
+Conforme observado na tabela, o ano de 2023 foi na média mais quente que o de 2022, embora 2022 tenha tido uma maior temperatura máxima.
+
+Agora seguindo a próxima tarefa, vamos criar agrupamentos com a temperatura máxima, mínima e média dos períodos de tempo.
+
+```{r}
+agrupamento_diario_2023 <- dados_clima_2023 %>%
+  group_by(dia = floor_date(datetime, "day")) %>%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+agrupamento_semanal_2023 <- dados_clima_2023 %>%
+  group_by(semana = floor_date(datetime, "week")) %>%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+agrupamento_mensal_2023 <- dados_clima_2023 %>%
+  group_by(mes = floor_date(datetime, "month")) %>%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+agrupamento_bimestral_2023 <- dados_clima_2023 %>%
+  group_by(bimestre = cut(datetime, breaks = "2 months", labels = FALSE)) %>%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+agrupamento_semestral_2023 <- dados_clima_2023 %>%
+  group_by(semestre = semester(datetime)) %>%  # Define o semestre com lubridate
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+agrupamento_diario_2023
+```
+
+```{r}
+agrupamento_diario_2022 <- dados_clima_2022 %>%
+  group_by(dia = floor_date(datetime, "day")) %>%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+agrupamento_semanal_2022 <- dados_clima_2022 %>%
+  group_by(semana = floor_date(datetime, "week")) %>%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+agrupamento_mensal_2022 <- dados_clima_2022 %>%
+  group_by(mes = floor_date(datetime, "month")) %>%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+agrupamento_bimestral_2022 <- dados_clima_2022 %>%
+  group_by(bimestre = cut(datetime, breaks = "2 months", labels = FALSE)) %>%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+agrupamento_semestral_2022 <- dados_clima_2022 %>%
+  group_by(semestre = semester(datetime)) %>%  # Define o semestre com lubridate
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+agrupamento_diario_2022
+```
+Já verificamos que o ano de 2023 foi mais quente em média, agora nos resta verficar quais foram os meses mais quentes. Podemos verificar facilmente usando o último agrupamento mensal.
+
+```{r}
+agrupamento_mensal_2022
+```
+
+```{r}
+agrupamento_mensal_2023
+```
+
+Em ambos os anos os meses de fevereiro e março foram os mais quentes. Já em 2023 os meses de julho e agosto foram os mais frios, em 2022 foram Setembro e Junho.
+
+Podemos fazer outras análises com base nos agrupamentos mensais, como  verificar quais foram os meses mais chuvosos do ano utilizando a coluna PRECIPITAÇÃO TOTAL, HORÁRIO (mm).
+
+```{r}
+agrupamento_mensal_2022_precipitacao <- dados_clima_2022 %>%
+  group_by(mes = floor_date(datetime, "month")) %>%
+  summarise(
+    Media_Precipitacao = mean(`PRECIPITAÇÃO TOTAL, HORÁRIO (mm)`, na.rm = TRUE),
+    Maxima_Precipitacao = max(`PRECIPITAÇÃO TOTAL, HORÁRIO (mm)`, na.rm = TRUE),
+    Minima_Precipitacao = min(`PRECIPITAÇÃO TOTAL, HORÁRIO (mm)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+agrupamento_mensal_2023_precipitacao <- dados_clima_2023 %>%
+  group_by(mes = floor_date(datetime, "month")) %>%
+  summarise(
+    Media_Precipitacao = mean(`PRECIPITAÇÃO TOTAL, HORÁRIO (mm)`, na.rm = TRUE),
+    Maxima_Precipitacao = max(`PRECIPITAÇÃO TOTAL, HORÁRIO (mm)`, na.rm = TRUE),
+    Minima_Precipitacao = min(`PRECIPITAÇÃO TOTAL, HORÁRIO (mm)`, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+
+```{r}
+agrupamento_mensal_2023_precipitacao
+```
+
+```{r}
+agrupamento_mensal_2022_precipitacao
+```
+Em 2022 o mês mais chuvoso foi Abril, enquanto em 2023 foi fevereiro.
 

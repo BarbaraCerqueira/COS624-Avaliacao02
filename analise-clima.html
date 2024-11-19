@@ -1629,18 +1629,570 @@ metereológica de Copacabana em 2022 e 2023</h1>
 anos de 2023 e 2024 na estação metereológica do forte de Copacabana. Os
 dados utilizados foram obtidos no site do INMET, acessível <a href="https://portal.inmet.gov.br/dadoshistoricos">neste link</a>.</p>
 <pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.4     ✔ readr     2.1.5
+## ✔ forcats   1.0.0     ✔ stringr   1.5.1
+## ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
+## ✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+## ✔ purrr     1.0.2     
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
 <div id="importando-os-dados-de-2023" class="section level2">
 <h2>Importando os dados de 2023</h2>
-<pre class="r"><code>dados_clima_2023 &lt;- read_delim(file = &quot;./Dados_Estacao_Copacabana/INMET_SE_RJ_A652_RIO DE JANEIRO - FORTE DE COPACABANA_01-01-2023_A_31-12-2023.CSV&quot;,delim = &quot;;&quot;, locale = locale(&quot;pt&quot;, decimal_mark = &quot;,&quot;, encoding = &quot;Latin1&quot;))</code></pre>
+<pre class="r"><code>dados_clima_2023 &lt;- read_delim(file = &quot;./Dados_Estacao_Copacabana/INMET_SE_RJ_A652_RIO DE JANEIRO - FORTE DE COPACABANA_01-01-2023_A_31-12-2023.CSV&quot;,delim = &quot;;&quot;, locale = locale(&quot;pt&quot;, decimal_mark = &quot;,&quot;, encoding = &quot;UTF-8&quot;))</code></pre>
 <pre><code>## New names:
 ## Rows: 8760 Columns: 20
 ## ── Column specification
-## ────────────────────────────────────────────────────────────────────────────────────────── Delimiter: &quot;;&quot; chr
-## (1): Hora UTC dbl (17): PRECIPITAÃÃO TOTAL, HORÃRIO (mm), PRESSAO ATMOSFERICA AO NIVEL DA ESTACAO, HORARIA (mB),
-## PRESSÃ... lgl (1): ...20 date (1): Data
-## ℹ Use `spec()` to retrieve the full column specification for this data. ℹ Specify the column types or set
-## `show_col_types = FALSE` to quiet this message.
+## ──────────────────────────────────────────────────────── Delimiter: &quot;;&quot; chr
+## (1): Hora UTC dbl (17): PRECIPITAÇÃO TOTAL, HORÁRIO (mm), PRESSAO ATMOSFERICA
+## AO NIVEL DA... lgl (1): ...20 date (1): Data
+## ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
+## Specify the column types or set `show_col_types = FALSE` to quiet this message.
 ## • `` -&gt; `...20`</code></pre>
+</div>
+<div id="importando-os-dados-de-2022" class="section level2">
+<h2>Importando os dados de 2022</h2>
+<pre class="r"><code>dados_clima_2022 &lt;- read_delim(file = &quot;./Dados_Estacao_Copacabana/INMET_SE_RJ_A652_RIO DE JANEIRO - FORTE DE COPACABANA_01-01-2022_A_31-12-2022.CSV&quot;,delim = &quot;;&quot;, locale = locale(&quot;pt&quot;, decimal_mark = &quot;,&quot;, encoding = &quot;UTF-8&quot;))</code></pre>
+<pre><code>## New names:
+## Rows: 8760 Columns: 20
+## ── Column specification
+## ──────────────────────────────────────────────────────── Delimiter: &quot;;&quot; chr
+## (1): Hora UTC dbl (17): PRECIPITAÇÃO TOTAL, HORÁRIO (mm), PRESSAO ATMOSFERICA
+## AO NIVEL DA... lgl (1): ...20 date (1): Data
+## ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
+## Specify the column types or set `show_col_types = FALSE` to quiet this message.
+## • `` -&gt; `...20`</code></pre>
+<p>Os datasets possuem informações de clima de todas as estações do ano,
+iremos nos limitar a estação do outono, compreendida entre 20 de março e
+21 de junho.</p>
+</div>
+<div id="verificando-os-tipos-de-dados-inferidos" class="section level1">
+<h1>Verificando os tipos de dados inferidos</h1>
+<pre class="r"><code>str(dados_clima_2023)</code></pre>
+<pre><code>## spc_tbl_ [8,760 × 20] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+##  $ Data                                                 : Date[1:8760], format: &quot;2023-01-01&quot; &quot;2023-01-01&quot; ...
+##  $ Hora UTC                                             : chr [1:8760] &quot;0000 UTC&quot; &quot;0100 UTC&quot; &quot;0200 UTC&quot; &quot;0300 UTC&quot; ...
+##  $ PRECIPITAÇÃO TOTAL, HORÁRIO (mm)                     : num [1:8760] 0 0 0 0 0 0 0 0 0 0 ...
+##  $ PRESSAO ATMOSFERICA AO NIVEL DA ESTACAO, HORARIA (mB): num [1:8760] 1011 1011 1011 1011 1010 ...
+##  $ PRESSÃO ATMOSFERICA MAX.NA HORA ANT. (AUT) (mB)      : num [1:8760] 1011 1012 1011 1011 1011 ...
+##  $ PRESSÃO ATMOSFERICA MIN. NA HORA ANT. (AUT) (mB)     : num [1:8760] 1011 1011 1011 1011 1010 ...
+##  $ RADIACAO GLOBAL (Kj/m²)                              : num [1:8760] NA NA NA NA NA ...
+##  $ TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)         : num [1:8760] 25.9 23.1 23 22.7 23.2 23.2 22.6 22.2 22.9 23 ...
+##  $ TEMPERATURA DO PONTO DE ORVALHO (°C)                 : num [1:8760] 19.4 19.4 NA NA NA NA NA NA NA NA ...
+##  $ TEMPERATURA MÁXIMA NA HORA ANT. (AUT) (°C)           : num [1:8760] 26 26 23.2 23 23.2 23.5 23.2 22.9 22.9 23.2 ...
+##  $ TEMPERATURA MÍNIMA NA HORA ANT. (AUT) (°C)           : num [1:8760] 25 23.1 23 22.7 22.7 23 22.5 22.2 22 22.7 ...
+##  $ TEMPERATURA ORVALHO MAX. NA HORA ANT. (AUT) (°C)     : num [1:8760] 25.6 19.4 NA NA NA NA NA NA NA NA ...
+##  $ TEMPERATURA ORVALHO MIN. NA HORA ANT. (AUT) (°C)     : num [1:8760] 19.1 18.5 NA NA NA NA NA NA NA NA ...
+##  $ UMIDADE REL. MAX. NA HORA ANT. (AUT) (%)             : num [1:8760] 100 80 NA NA NA NA NA NA NA NA ...
+##  $ UMIDADE REL. MIN. NA HORA ANT. (AUT) (%)             : num [1:8760] 67 65 NA NA NA NA NA NA NA NA ...
+##  $ UMIDADE RELATIVA DO AR, HORARIA (%)                  : num [1:8760] 67 80 NA NA NA NA NA NA NA NA ...
+##  $ VENTO, DIREÇÃO HORARIA (gr) (° (gr))                 : num [1:8760] 352 252 231 274 6 4 17 193 23 266 ...
+##  $ VENTO, RAJADA MAXIMA (m/s)                           : num [1:8760] 7.3 5.5 3.8 2.4 2.9 2.8 2 1.9 3.3 3.3 ...
+##  $ VENTO, VELOCIDADE HORARIA (m/s)                      : num [1:8760] 2 1 1.3 1.4 0.6 0.4 0.6 0.7 1.2 1 ...
+##  $ ...20                                                : logi [1:8760] NA NA NA NA NA NA ...
+##  - attr(*, &quot;spec&quot;)=
+##   .. cols(
+##   ..   Data = col_date(format = &quot;&quot;),
+##   ..   `Hora UTC` = col_character(),
+##   ..   `PRECIPITAÇÃO TOTAL, HORÁRIO (mm)` = col_double(),
+##   ..   `PRESSAO ATMOSFERICA AO NIVEL DA ESTACAO, HORARIA (mB)` = col_double(),
+##   ..   `PRESSÃO ATMOSFERICA MAX.NA HORA ANT. (AUT) (mB)` = col_double(),
+##   ..   `PRESSÃO ATMOSFERICA MIN. NA HORA ANT. (AUT) (mB)` = col_double(),
+##   ..   `RADIACAO GLOBAL (Kj/m²)` = col_double(),
+##   ..   `TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)` = col_double(),
+##   ..   `TEMPERATURA DO PONTO DE ORVALHO (°C)` = col_double(),
+##   ..   `TEMPERATURA MÁXIMA NA HORA ANT. (AUT) (°C)` = col_double(),
+##   ..   `TEMPERATURA MÍNIMA NA HORA ANT. (AUT) (°C)` = col_double(),
+##   ..   `TEMPERATURA ORVALHO MAX. NA HORA ANT. (AUT) (°C)` = col_double(),
+##   ..   `TEMPERATURA ORVALHO MIN. NA HORA ANT. (AUT) (°C)` = col_double(),
+##   ..   `UMIDADE REL. MAX. NA HORA ANT. (AUT) (%)` = col_double(),
+##   ..   `UMIDADE REL. MIN. NA HORA ANT. (AUT) (%)` = col_double(),
+##   ..   `UMIDADE RELATIVA DO AR, HORARIA (%)` = col_double(),
+##   ..   `VENTO, DIREÇÃO HORARIA (gr) (° (gr))` = col_double(),
+##   ..   `VENTO, RAJADA MAXIMA (m/s)` = col_double(),
+##   ..   `VENTO, VELOCIDADE HORARIA (m/s)` = col_double(),
+##   ..   ...20 = col_logical()
+##   .. )
+##  - attr(*, &quot;problems&quot;)=&lt;externalptr&gt;</code></pre>
+<pre class="r"><code>str(dados_clima_2022)</code></pre>
+<pre><code>## spc_tbl_ [8,760 × 20] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
+##  $ Data                                                 : Date[1:8760], format: &quot;2022-01-01&quot; &quot;2022-01-01&quot; ...
+##  $ Hora UTC                                             : chr [1:8760] &quot;0000 UTC&quot; &quot;0100 UTC&quot; &quot;0200 UTC&quot; &quot;0300 UTC&quot; ...
+##  $ PRECIPITAÇÃO TOTAL, HORÁRIO (mm)                     : num [1:8760] 0 0 0.2 0.2 0 0 0.8 0 0.6 0 ...
+##  $ PRESSAO ATMOSFERICA AO NIVEL DA ESTACAO, HORARIA (mB): num [1:8760] 1005 1005 1005 1004 1004 ...
+##  $ PRESSÃO ATMOSFERICA MAX.NA HORA ANT. (AUT) (mB)      : num [1:8760] 1005 1005 1006 1005 1004 ...
+##  $ PRESSÃO ATMOSFERICA MIN. NA HORA ANT. (AUT) (mB)     : num [1:8760] 1004 1005 1005 1004 1003 ...
+##  $ RADIACAO GLOBAL (Kj/m²)                              : num [1:8760] NA NA NA NA NA NA NA NA NA 18.1 ...
+##  $ TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)         : num [1:8760] 24.6 24.5 24.2 24.2 23.9 23.4 22.6 22.6 22.6 22.4 ...
+##  $ TEMPERATURA DO PONTO DE ORVALHO (°C)                 : num [1:8760] 21.6 21.4 21.2 20.9 20.7 20.9 20.6 20.6 20.4 20.8 ...
+##  $ TEMPERATURA MÁXIMA NA HORA ANT. (AUT) (°C)           : num [1:8760] 24.9 24.7 24.5 24.4 24.3 24.2 23.4 22.8 22.8 23.1 ...
+##  $ TEMPERATURA MÍNIMA NA HORA ANT. (AUT) (°C)           : num [1:8760] 23.9 24.4 24 23.8 23.6 23.4 22.3 22.4 22.6 22.3 ...
+##  $ TEMPERATURA ORVALHO MAX. NA HORA ANT. (AUT) (°C)     : num [1:8760] 22.1 21.6 21.4 21.2 20.9 20.9 20.9 20.7 20.6 20.8 ...
+##  $ TEMPERATURA ORVALHO MIN. NA HORA ANT. (AUT) (°C)     : num [1:8760] 21.5 21.4 21.2 20.9 20.5 19.9 20.4 20.2 20.3 20.2 ...
+##  $ UMIDADE REL. MAX. NA HORA ANT. (AUT) (%)             : num [1:8760] 88 84 85 84 83 86 90 89 89 90 ...
+##  $ UMIDADE REL. MIN. NA HORA ANT. (AUT) (%)             : num [1:8760] 83 82 83 82 81 77 86 86 86 86 ...
+##  $ UMIDADE RELATIVA DO AR, HORARIA (%)                  : num [1:8760] 83 83 83 82 82 86 88 89 88 90 ...
+##  $ VENTO, DIREÇÃO HORARIA (gr) (° (gr))                 : num [1:8760] 56 114 98 93 91 302 327 302 6 64 ...
+##  $ VENTO, RAJADA MAXIMA (m/s)                           : num [1:8760] 5.2 4 5.4 5.4 5 5 3.1 3.2 3.3 3.2 ...
+##  $ VENTO, VELOCIDADE HORARIA (m/s)                      : num [1:8760] 1.1 1 1.7 1.5 2.7 1.6 1.6 1.8 2.2 1.7 ...
+##  $ ...20                                                : logi [1:8760] NA NA NA NA NA NA ...
+##  - attr(*, &quot;spec&quot;)=
+##   .. cols(
+##   ..   Data = col_date(format = &quot;&quot;),
+##   ..   `Hora UTC` = col_character(),
+##   ..   `PRECIPITAÇÃO TOTAL, HORÁRIO (mm)` = col_double(),
+##   ..   `PRESSAO ATMOSFERICA AO NIVEL DA ESTACAO, HORARIA (mB)` = col_double(),
+##   ..   `PRESSÃO ATMOSFERICA MAX.NA HORA ANT. (AUT) (mB)` = col_double(),
+##   ..   `PRESSÃO ATMOSFERICA MIN. NA HORA ANT. (AUT) (mB)` = col_double(),
+##   ..   `RADIACAO GLOBAL (Kj/m²)` = col_double(),
+##   ..   `TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)` = col_double(),
+##   ..   `TEMPERATURA DO PONTO DE ORVALHO (°C)` = col_double(),
+##   ..   `TEMPERATURA MÁXIMA NA HORA ANT. (AUT) (°C)` = col_double(),
+##   ..   `TEMPERATURA MÍNIMA NA HORA ANT. (AUT) (°C)` = col_double(),
+##   ..   `TEMPERATURA ORVALHO MAX. NA HORA ANT. (AUT) (°C)` = col_double(),
+##   ..   `TEMPERATURA ORVALHO MIN. NA HORA ANT. (AUT) (°C)` = col_double(),
+##   ..   `UMIDADE REL. MAX. NA HORA ANT. (AUT) (%)` = col_double(),
+##   ..   `UMIDADE REL. MIN. NA HORA ANT. (AUT) (%)` = col_double(),
+##   ..   `UMIDADE RELATIVA DO AR, HORARIA (%)` = col_double(),
+##   ..   `VENTO, DIREÇÃO HORARIA (gr) (° (gr))` = col_double(),
+##   ..   `VENTO, RAJADA MAXIMA (m/s)` = col_double(),
+##   ..   `VENTO, VELOCIDADE HORARIA (m/s)` = col_double(),
+##   ..   ...20 = col_logical()
+##   .. )
+##  - attr(*, &quot;problems&quot;)=&lt;externalptr&gt;</code></pre>
+<p>Foram verificadas em um momento inicial 8,760 linhas e 20 colunas em
+2022 e 2023. Procederemos agora para a verificação da quantidade de
+células válidas.</p>
+<pre class="r"><code>num_celulas_validas &lt;- sum(!is.na(dados_clima_2022))
+
+cat(&quot;O total de células válidas em 2022 é:&quot;, num_celulas_validas, &quot;\n&quot;)</code></pre>
+<pre><code>## O total de células válidas em 2022 é: 159588</code></pre>
+<pre class="r"><code>num_celulas_validas &lt;- sum(!is.na(dados_clima_2023))
+
+cat(&quot;O total de células válidas em 2023 é:&quot;, num_celulas_validas, &quot;\n&quot;)</code></pre>
+<pre><code>## O total de células válidas em 2023 é: 143669</code></pre>
+<div id="filtragem-das-colunas" class="section level2">
+<h2>Filtragem das colunas</h2>
+<p>Filtraremos as colunas informadas no enunciado + as colunas de data e
+hora para permitir as agregações</p>
+<pre class="r"><code>colunas_desejadas &lt;- c(
+  &quot;PRECIPITAÇÃO TOTAL, HORÁRIO (mm)&quot;,
+  &quot;PRESSAO ATMOSFERICA AO NIVEL DA ESTACAO, HORARIA (mB)&quot;,
+  &quot;PRESSÃO ATMOSFERICA MAX.NA HORA ANT. (AUT) (mB)&quot;,
+  &quot;PRESSÃO ATMOSFERICA MIN. NA HORA ANT. (AUT) (mB)&quot;,
+  &quot;TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)&quot;,
+  &quot;TEMPERATURA MÁXIMA NA HORA ANT. (AUT) (°C)&quot;,
+  &quot;TEMPERATURA MÍNIMA NA HORA ANT. (AUT) (°C)&quot;,
+  &quot;VENTO, DIREÇÃO HORARIA (gr) (° (gr))&quot;,
+  &quot;VENTO, RAJADA MAXIMA (m/s)&quot;,
+  &quot;VENTO, VELOCIDADE HORARIA (m/s)&quot;,
+  &quot;Data&quot;,
+  &quot;Hora UTC&quot;
+)
+
+dados_clima_2022 &lt;- dados_clima_2022[, colunas_desejadas]
+dados_clima_2023 &lt;- dados_clima_2023[, colunas_desejadas]</code></pre>
+<p>Verificaremos o total de linhas, colunas e células válidas</p>
+<pre class="r"><code>num_linhas &lt;- nrow(dados_clima_2022)
+
+num_colunas &lt;- ncol(dados_clima_2022)
+
+num_celulas_validas &lt;- sum(!is.na(dados_clima_2022))
+
+cat(
+  &quot;Sumário do dataframe 2022:\n&quot;,
+  &quot;Número de linhas:&quot;, num_linhas, &quot;\n&quot;,
+  &quot;Número de colunas:&quot;, num_colunas, &quot;\n&quot;,
+  &quot;Número de células válidas:&quot;, num_celulas_validas, &quot;\n&quot;
+)</code></pre>
+<pre><code>## Sumário do dataframe 2022:
+##  Número de linhas: 8760 
+##  Número de colunas: 12 
+##  Número de células válidas: 103795</code></pre>
+<pre class="r"><code>num_linhas &lt;- nrow(dados_clima_2023)
+
+num_colunas &lt;- ncol(dados_clima_2023)
+
+num_celulas_validas &lt;- sum(!is.na(dados_clima_2023))
+
+cat(
+  &quot;Sumário do dataframe 2023:\n&quot;,
+  &quot;Número de linhas:&quot;, num_linhas, &quot;\n&quot;,
+  &quot;Número de colunas:&quot;, num_colunas, &quot;\n&quot;,
+  &quot;Número de células válidas:&quot;, num_celulas_validas, &quot;\n&quot;
+)</code></pre>
+<pre><code>## Sumário do dataframe 2023:
+##  Número de linhas: 8760 
+##  Número de colunas: 12 
+##  Número de células válidas: 105099</code></pre>
+</div>
+<div id="filtragem-de-linhas-vazias" class="section level2">
+<h2>Filtragem de linhas vazias</h2>
+<p>Usaremos filter() do pacote dplyr para remover todas as linhas com ao
+menos um valor Na, o que convenienetemente é feito usando o
+complete.cases(.).</p>
+<pre class="r"><code>library(dplyr)
+
+# Remover linhas com pelo menos um NA
+dados_clima_2022 &lt;- dados_clima_2022 %&gt;%
+  filter(complete.cases(.))
+
+# Verificar o resultado
+cat(&quot;Número de linhas do dataframe 2022 após remoção de NAs:&quot;, nrow(dados_clima_2022), &quot;\n&quot;)</code></pre>
+<pre><code>## Número de linhas do dataframe 2022 após remoção de NAs: 8292</code></pre>
+<pre class="r"><code># Remover linhas com pelo menos um NA
+dados_clima_2023 &lt;- dados_clima_2023 %&gt;%
+  filter(complete.cases(.))
+
+# Verificar o resultado
+cat(&quot;Número de linhas do dataframe 2023 após remoção de NAs:&quot;, nrow(dados_clima_2023), &quot;\n&quot;)</code></pre>
+<pre><code>## Número de linhas do dataframe 2023 após remoção de NAs: 8755</code></pre>
+<pre class="r"><code>tem_na &lt;- any(is.na(dados_clima_2023))
+
+if (tem_na) {
+  cat(&quot;Ainda existem valores NA no dataframe.\n&quot;)
+} else {
+  cat(&quot;Todos os valores NA foram removidos com sucesso.\n&quot;)
+}</code></pre>
+<pre><code>## Todos os valores NA foram removidos com sucesso.</code></pre>
+<pre class="r"><code>dados_clima_2022 &lt;- dados_clima_2022 %&gt;%
+  mutate(`Hora UTC` = as.numeric(substr(`Hora UTC`, 1, 2)))</code></pre>
+<pre class="r"><code>dados_clima_2023 &lt;- dados_clima_2023 %&gt;%
+  mutate(`Hora UTC` = as.numeric(substr(`Hora UTC`, 1, 2)))</code></pre>
+<p>Agora, tomaremos a faixa de valores de horário entre 9 e 15 (Parte da
+tarde em UTC - 3) e em seguida calcularemos as temperaturas máxima,
+mínima e média do períodoem ambos os anos.</p>
+<pre class="r"><code>slice_df &lt;- dados_clima_2022 %&gt;%
+  filter(`Hora UTC` &gt;= 9 &amp; `Hora UTC` &lt;= 15)
+
+resultados &lt;- slice_df %&gt;%
+  summarise(
+    Minimo = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maximo = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Media = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE)
+  )
+print(resultados)</code></pre>
+<pre><code>## # A tibble: 1 × 3
+##   Minimo Maximo Media
+##    &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
+## 1   15.4   36.8  24.3</code></pre>
+<pre class="r"><code>slice_df &lt;- dados_clima_2023 %&gt;%
+  filter(`Hora UTC` &gt;= 9 &amp; `Hora UTC` &lt;= 15)
+
+resultados &lt;- slice_df %&gt;%
+  summarise(
+    Minimo = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maximo = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Media = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE)
+  )
+print(resultados)</code></pre>
+<pre><code>## # A tibble: 1 × 3
+##   Minimo Maximo Media
+##    &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;
+## 1   15.8   38.3  25.0</code></pre>
+<p>Agora precisamos calcular todas as estatísticas básicas de cada
+coluna dos dataframes, e para isso:</p>
+<pre class="r"><code>library(tidyr)
+
+calcula_moda &lt;- function(x) {
+  unique_x &lt;- unique(x)
+  unique_x[which.max(tabulate(match(x, unique_x)))]
+}
+
+estatisticas &lt;- dados_clima_2022 %&gt;%
+  select(where(is.numeric)) %&gt;%  # Seleciona apenas colunas numéricas
+  summarise(across(
+    everything(),
+    list(
+      Media = ~ mean(.x, na.rm = TRUE),
+      Mediana = ~ median(.x, na.rm = TRUE),
+      Moda = ~ calcula_moda(.x),
+      Minimo = ~ min(.x, na.rm = TRUE),
+      Maximo = ~ max(.x, na.rm = TRUE),
+      Intervalo = ~ max(.x, na.rm = TRUE) - min(.x, na.rm = TRUE),
+      DesvioPadrao = ~ sd(.x, na.rm = TRUE)
+    ),
+    .names = &quot;{.col}_{.fn}&quot;
+  )) %&gt;%
+  pivot_longer(cols = everything(), 
+               names_to = c(&quot;Variavel&quot;, &quot;Estatistica&quot;), 
+               names_sep = &quot;_&quot;, 
+               values_to = &quot;Valor&quot;) %&gt;%
+  pivot_wider(names_from = Estatistica, values_from = Valor)
+
+estatisticas</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Variavel"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Media"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Mediana"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Moda"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Minimo"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Maximo"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["Intervalo"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["DesvioPadrao"],"name":[8],"type":["dbl"],"align":["right"]}],"data":[{"1":"PRECIPITAÇÃO TOTAL, HORÁRIO (mm)","2":"0.1272311","3":"0.0","4":"0.0","5":"0.0","6":"60.4","7":"60.4","8":"1.017268"},{"1":"PRESSAO ATMOSFERICA AO NIVEL DA ESTACAO, HORARIA (mB)","2":"1011.0458394","3":"1010.6","4":"1008.1","5":"997.1","6":"1026.7","7":"29.6","8":"4.652625"},{"1":"PRESSÃO ATMOSFERICA MAX.NA HORA ANT. (AUT) (mB)","2":"1011.2804028","3":"1010.8","4":"1008.1","5":"997.3","6":"1026.8","7":"29.5","8":"4.636464"},{"1":"PRESSÃO ATMOSFERICA MIN. NA HORA ANT. (AUT) (mB)","2":"1010.8063676","3":"1010.4","4":"1008.1","5":"997.0","6":"1026.5","7":"29.5","8":"4.660364"},{"1":"TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)","2":"23.4748915","3":"23.3","4":"22.7","5":"15.4","6":"36.8","7":"21.4","8":"2.912631"},{"1":"TEMPERATURA MÁXIMA NA HORA ANT. (AUT) (°C)","2":"23.9895924","3":"23.8","4":"24.4","5":"15.8","6":"36.8","7":"21.0","8":"3.092958"},{"1":"TEMPERATURA MÍNIMA NA HORA ANT. (AUT) (°C)","2":"22.9902436","3":"23.0","4":"22.8","5":"15.2","6":"35.8","7":"20.6","8":"2.718762"},{"1":"VENTO, DIREÇÃO HORARIA (gr) (° (gr))","2":"160.3655330","3":"126.0","4":"279.0","5":"1.0","6":"360.0","7":"359.0","8":"94.582729"},{"1":"VENTO, RAJADA MAXIMA (m/s)","2":"5.6558852","3":"5.0","4":"4.0","5":"0.9","6":"26.0","7":"25.1","8":"3.060273"},{"1":"VENTO, VELOCIDADE HORARIA (m/s)","2":"2.4978654","3":"2.0","4":"1.3","5":"0.2","6":"12.3","7":"12.1","8":"1.753937"},{"1":"Hora UTC","2":"11.4751568","3":"11.0","4":"9.0","5":"0.0","6":"23.0","7":"23.0","8":"6.949895"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Repetindo a mesma coisa para 2023:</p>
+<pre class="r"><code>estatisticas &lt;- dados_clima_2023 %&gt;%
+  select(where(is.numeric)) %&gt;%  # Seleciona apenas colunas numéricas
+  summarise(across(
+    everything(),
+    list(
+      Media = ~ mean(.x, na.rm = TRUE),
+      Mediana = ~ median(.x, na.rm = TRUE),
+      Moda = ~ calcula_moda(.x),
+      Minimo = ~ min(.x, na.rm = TRUE),
+      Maximo = ~ max(.x, na.rm = TRUE),
+      Intervalo = ~ max(.x, na.rm = TRUE) - min(.x, na.rm = TRUE),
+      DesvioPadrao = ~ sd(.x, na.rm = TRUE)
+    ),
+    .names = &quot;{.col}_{.fn}&quot;
+  )) %&gt;%
+  pivot_longer(cols = everything(), 
+               names_to = c(&quot;Variavel&quot;, &quot;Estatistica&quot;), 
+               names_sep = &quot;_&quot;, 
+               values_to = &quot;Valor&quot;) %&gt;%
+  pivot_wider(names_from = Estatistica, values_from = Valor)
+
+estatisticas</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Variavel"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Media"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Mediana"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Moda"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Minimo"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Maximo"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["Intervalo"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["DesvioPadrao"],"name":[8],"type":["dbl"],"align":["right"]}],"data":[{"1":"PRECIPITAÇÃO TOTAL, HORÁRIO (mm)","2":"0.1294346","3":"0.0","4":"0.0","5":"0.0","6":"64.4","7":"64.4","8":"1.236039"},{"1":"PRESSAO ATMOSFERICA AO NIVEL DA ESTACAO, HORARIA (mB)","2":"1011.0769503","3":"1011.0","4":"1011.8","5":"996.1","6":"1028.2","7":"32.1","8":"4.699477"},{"1":"PRESSÃO ATMOSFERICA MAX.NA HORA ANT. (AUT) (mB)","2":"1011.3228098","3":"1011.2","4":"1013.0","5":"996.7","6":"1028.4","7":"31.7","8":"4.670420"},{"1":"PRESSÃO ATMOSFERICA MIN. NA HORA ANT. (AUT) (mB)","2":"1010.8273672","3":"1010.7","4":"1008.8","5":"996.0","6":"1028.1","7":"32.1","8":"4.721450"},{"1":"TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)","2":"24.0710451","3":"23.8","4":"22.4","5":"15.8","6":"38.3","7":"22.5","8":"2.913071"},{"1":"TEMPERATURA MÁXIMA NA HORA ANT. (AUT) (°C)","2":"24.6035865","3":"24.3","4":"23.9","5":"16.1","6":"38.4","7":"22.3","8":"3.134238"},{"1":"TEMPERATURA MÍNIMA NA HORA ANT. (AUT) (°C)","2":"23.5747801","3":"23.4","4":"23.6","5":"15.6","6":"37.8","7":"22.2","8":"2.686538"},{"1":"VENTO, DIREÇÃO HORARIA (gr) (° (gr))","2":"156.2852085","3":"118.0","4":"84.0","5":"1.0","6":"360.0","7":"359.0","8":"96.186489"},{"1":"VENTO, RAJADA MAXIMA (m/s)","2":"5.3063849","3":"4.6","4":"4.0","5":"0.7","6":"25.5","7":"24.8","8":"2.804891"},{"1":"VENTO, VELOCIDADE HORARIA (m/s)","2":"2.3063392","3":"1.8","4":"1.4","5":"0.2","6":"12.6","7":"12.4","8":"1.613335"},{"1":"Hora UTC","2":"11.4982296","3":"11.0","4":"0.0","5":"0.0","6":"23.0","7":"23.0","8":"6.924020"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>library(lubridate)
+
+dados_clima_2022 &lt;- dados_clima_2022 %&gt;%
+  mutate(datetime = ymd_h(paste(Data, `Hora UTC`)))
+
+agrupamento_diario_2022 &lt;- dados_clima_2022 %&gt;%
+  group_by(dia = floor_date(datetime, &quot;day&quot;)) %&gt;%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_semanal_2022 &lt;- dados_clima_2022 %&gt;%
+  group_by(semana = floor_date(datetime, &quot;week&quot;)) %&gt;%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_mensal_2022 &lt;- dados_clima_2022 %&gt;%
+  group_by(mes = floor_date(datetime, &quot;month&quot;)) %&gt;%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_bimestral_2022 &lt;- dados_clima_2022 %&gt;%
+  group_by(bimestre = cut(datetime, breaks = &quot;2 months&quot;, labels = FALSE)) %&gt;%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_semestral_2022 &lt;- dados_clima_2022 %&gt;%
+  group_by(semestre = semester(datetime)) %&gt;%  # Define o semestre com lubridate
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_mensal_2022</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["mes"],"name":[1],"type":["dttm"],"align":["right"]},{"label":["PRECIPITAÇÃO TOTAL, HORÁRIO (mm)"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["PRESSAO ATMOSFERICA AO NIVEL DA ESTACAO, HORARIA (mB)"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["PRESSÃO ATMOSFERICA MAX.NA HORA ANT. (AUT) (mB)"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["PRESSÃO ATMOSFERICA MIN. NA HORA ANT. (AUT) (mB)"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["TEMPERATURA MÁXIMA NA HORA ANT. (AUT) (°C)"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["TEMPERATURA MÍNIMA NA HORA ANT. (AUT) (°C)"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["VENTO, DIREÇÃO HORARIA (gr) (° (gr))"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["VENTO, RAJADA MAXIMA (m/s)"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["VENTO, VELOCIDADE HORARIA (m/s)"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["Hora UTC"],"name":[12],"type":["dbl"],"align":["right"]}],"data":[{"1":"2022-01-01","2":"0.17607527","3":"1007.226","4":"1007.455","5":"1007.000","6":"25.10712","7":"25.71290","8":"24.52285","9":"139.1815","10":"4.987634","11":"2.179032","12":"11.50000"},{"1":"2022-02-01","2":"0.09107143","3":"1008.314","4":"1008.533","5":"1008.091","6":"25.49881","7":"25.99063","8":"25.03988","9":"162.3482","10":"4.438839","11":"2.029613","12":"11.50000"},{"1":"2022-03-01","2":"0.01102151","3":"1008.666","4":"1008.888","5":"1008.440","6":"26.09866","7":"26.76841","8":"25.45901","9":"147.5309","10":"5.189382","11":"2.322849","12":"11.50000"},{"1":"2022-04-01","2":"0.28638889","3":"1010.791","4":"1011.019","5":"1010.559","6":"24.56194","7":"24.95222","8":"24.18819","9":"176.3056","10":"5.821389","11":"2.683750","12":"11.50000"},{"1":"2022-05-01","2":"0.10771313","3":"1012.531","4":"1012.765","5":"1012.294","6":"22.88484","7":"23.33613","8":"22.44777","9":"174.3342","10":"5.932070","11":"2.384032","12":"11.47632"},{"1":"2022-06-01","2":"0.11737892","3":"1013.847","4":"1014.071","5":"1013.612","6":"20.89915","7":"21.30755","8":"20.54003","9":"175.7650","10":"5.768946","11":"2.375641","12":"11.46439"},{"1":"2022-07-01","2":"0.06189189","3":"1014.760","4":"1014.970","5":"1014.546","6":"22.70338","7":"23.18905","8":"22.25081","9":"146.6973","10":"4.947162","11":"2.044189","12":"11.47838"},{"1":"2022-08-01","2":"0.10517483","3":"1015.352","4":"1015.601","5":"1015.087","6":"21.34937","7":"21.85804","8":"20.89035","9":"158.0531","10":"7.218601","11":"3.121818","12":"11.40699"},{"1":"2022-09-01","2":"0.23833866","3":"1014.795","4":"1015.046","5":"1014.510","6":"20.33067","7":"20.80128","8":"19.91086","9":"170.2013","10":"7.037380","11":"3.144728","12":"11.24601"},{"1":"2022-10-01","2":"0.06000000","3":"1010.658","4":"1010.935","5":"1010.394","6":"23.53905","7":"24.01919","8":"23.10149","9":"163.9514","10":"5.995405","11":"2.801351","12":"11.48378"},{"1":"2022-11-01","2":"0.13916667","3":"1010.339","4":"1010.585","5":"1010.091","6":"23.07056","7":"23.60181","8":"22.55083","9":"181.7014","10":"5.884583","11":"2.776528","12":"11.50000"},{"1":"2022-12-01","2":"0.19676985","3":"1007.497","4":"1007.730","5":"1007.253","6":"23.81602","7":"24.46070","8":"23.19287","9":"136.1952","10":"5.411306","11":"2.471063","12":"11.51413"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>dados_clima_2023 &lt;- dados_clima_2023 %&gt;%
+  mutate(datetime = ymd_h(paste(Data, `Hora UTC`)))
+
+agrupamento_diario_2023 &lt;- dados_clima_2023 %&gt;%
+  group_by(dia = floor_date(datetime, &quot;day&quot;)) %&gt;%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_semanal_2023 &lt;- dados_clima_2023 %&gt;%
+  group_by(semana = floor_date(datetime, &quot;week&quot;)) %&gt;%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_mensal_2023 &lt;- dados_clima_2023 %&gt;%
+  group_by(mes = floor_date(datetime, &quot;month&quot;)) %&gt;%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_bimestral_2023 &lt;- dados_clima_2023 %&gt;%
+  group_by(bimestre = cut(datetime, breaks = &quot;2 months&quot;, labels = FALSE)) %&gt;%
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))
+
+agrupamento_semestral_2023 &lt;- dados_clima_2023 %&gt;%
+  group_by(semestre = semester(datetime)) %&gt;%  # Define o semestre com lubridate
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)))</code></pre>
+<p>De posse dos agrupamentos, devemos agora calcular as estatísticas
+para a comparação entre os anos. Como as comparações serão feitas entre
+os anos, vale mais a pena calcular as estatísticas do agrupamento diário
+na coluna de interesse TEMPERATURA DO AR - BULBO SECO, HORARIA (°C).</p>
+<pre class="r"><code>agrupamento_diario_2022 &lt;- agrupamento_semanal_2022 %&gt;%
+  mutate(ano = 2022)
+
+agrupamento_diario_2023 &lt;- agrupamento_semanal_2023 %&gt;%
+  mutate(ano = 2023)
+
+agrupamento_diario &lt;- bind_rows(agrupamento_diario_2022, agrupamento_diario_2023)
+
+estatisticas_diarias &lt;- agrupamento_diario %&gt;%
+  group_by(ano) %&gt;%  # Agrupar por ano
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Mediana_Temperatura = median(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minimo_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maximo_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Desvio_Temperatura = sd(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+
+estatisticas_diarias</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["ano"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["Media_Temperatura"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Mediana_Temperatura"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Minimo_Temperatura"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["Maximo_Temperatura"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["Desvio_Temperatura"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"2022","2":"23.32376","3":"23.86726","4":"18.95688","5":"27.19643","6":"1.949284"},{"1":"2023","2":"24.06108","3":"24.07857","4":"20.08393","5":"27.17143","6":"1.784709"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Conforme observado na tabela, o ano de 2023 foi na média mais quente
+que o de 2022, embora 2022 tenha tido uma maior temperatura máxima.</p>
+<p>Agora seguindo a próxima tarefa, vamos criar agrupamentos com a
+temperatura máxima, mínima e média dos períodos de tempo.</p>
+<pre class="r"><code>agrupamento_diario_2023 &lt;- dados_clima_2023 %&gt;%
+  group_by(dia = floor_date(datetime, &quot;day&quot;)) %&gt;%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+
+agrupamento_semanal_2023 &lt;- dados_clima_2023 %&gt;%
+  group_by(semana = floor_date(datetime, &quot;week&quot;)) %&gt;%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+
+agrupamento_mensal_2023 &lt;- dados_clima_2023 %&gt;%
+  group_by(mes = floor_date(datetime, &quot;month&quot;)) %&gt;%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+agrupamento_bimestral_2023 &lt;- dados_clima_2023 %&gt;%
+  group_by(bimestre = cut(datetime, breaks = &quot;2 months&quot;, labels = FALSE)) %&gt;%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+agrupamento_semestral_2023 &lt;- dados_clima_2023 %&gt;%
+  group_by(semestre = semester(datetime)) %&gt;%  # Define o semestre com lubridate
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+
+agrupamento_diario_2023</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["dia"],"name":[1],"type":["dttm"],"align":["right"]},{"label":["Media_Temperatura"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Maxima_Temperatura"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Minima_Temperatura"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"2023-01-01","2":"24.70000","3":"28.3","4":"22.2"},{"1":"2023-01-02","2":"25.33333","3":"28.5","4":"21.9"},{"1":"2023-01-03","2":"27.77917","3":"34.7","4":"23.0"},{"1":"2023-01-04","2":"27.90833","3":"34.0","4":"21.1"},{"1":"2023-01-05","2":"21.86250","3":"22.9","4":"20.8"},{"1":"2023-01-06","2":"21.20417","3":"22.1","4":"20.1"},{"1":"2023-01-07","2":"19.76250","3":"20.8","4":"18.8"},{"1":"2023-01-08","2":"21.19167","3":"24.0","4":"19.6"},{"1":"2023-01-09","2":"22.03750","3":"24.2","4":"20.8"},{"1":"2023-01-10","2":"23.25000","3":"25.4","4":"21.7"},{"1":"2023-01-11","2":"24.62500","3":"27.5","4":"22.8"},{"1":"2023-01-12","2":"25.55833","3":"30.0","4":"23.3"},{"1":"2023-01-13","2":"27.01250","3":"32.2","4":"23.2"},{"1":"2023-01-14","2":"27.11250","3":"29.7","4":"24.1"},{"1":"2023-01-15","2":"27.73333","3":"30.7","4":"25.1"},{"1":"2023-01-16","2":"26.67917","3":"30.1","4":"23.5"},{"1":"2023-01-17","2":"26.99167","3":"30.8","4":"23.6"},{"1":"2023-01-18","2":"26.89583","3":"31.3","4":"24.1"},{"1":"2023-01-19","2":"26.17083","3":"29.8","4":"23.8"},{"1":"2023-01-20","2":"24.62083","3":"30.4","4":"23.3"},{"1":"2023-01-21","2":"24.75417","3":"28.4","4":"22.6"},{"1":"2023-01-22","2":"25.79167","3":"30.6","4":"23.0"},{"1":"2023-01-23","2":"26.73333","3":"32.9","4":"24.4"},{"1":"2023-01-24","2":"25.53333","3":"27.5","4":"23.6"},{"1":"2023-01-25","2":"26.11667","3":"29.7","4":"24.3"},{"1":"2023-01-26","2":"26.51250","3":"32.1","4":"23.3"},{"1":"2023-01-27","2":"26.53750","3":"32.1","4":"24.1"},{"1":"2023-01-28","2":"25.66667","3":"29.3","4":"23.5"},{"1":"2023-01-29","2":"26.60833","3":"31.3","4":"23.8"},{"1":"2023-01-30","2":"25.95833","3":"29.2","4":"23.0"},{"1":"2023-01-31","2":"25.62917","3":"29.4","4":"22.3"},{"1":"2023-02-01","2":"26.42917","3":"31.6","4":"23.3"},{"1":"2023-02-02","2":"26.88333","3":"30.8","4":"24.9"},{"1":"2023-02-03","2":"27.28750","3":"30.8","4":"24.7"},{"1":"2023-02-04","2":"28.12083","3":"31.2","4":"24.3"},{"1":"2023-02-05","2":"27.71250","3":"33.0","4":"25.0"},{"1":"2023-02-06","2":"28.12500","3":"33.6","4":"25.4"},{"1":"2023-02-07","2":"26.87500","3":"31.3","4":"23.0"},{"1":"2023-02-08","2":"24.92083","3":"30.6","4":"22.6"},{"1":"2023-02-09","2":"26.40417","3":"30.9","4":"23.7"},{"1":"2023-02-10","2":"26.10417","3":"30.5","4":"23.6"},{"1":"2023-02-11","2":"24.55000","3":"27.1","4":"22.8"},{"1":"2023-02-12","2":"24.43333","3":"27.6","4":"21.7"},{"1":"2023-02-13","2":"26.10833","3":"31.7","4":"24.0"},{"1":"2023-02-14","2":"25.52500","3":"29.0","4":"23.0"},{"1":"2023-02-15","2":"27.67500","3":"30.1","4":"24.1"},{"1":"2023-02-16","2":"27.06667","3":"31.9","4":"23.1"},{"1":"2023-02-17","2":"28.19583","3":"31.5","4":"24.2"},{"1":"2023-02-18","2":"26.39583","3":"29.5","4":"25.1"},{"1":"2023-02-19","2":"25.27083","3":"27.2","4":"23.6"},{"1":"2023-02-20","2":"25.72917","3":"29.5","4":"23.3"},{"1":"2023-02-21","2":"26.54583","3":"31.7","4":"23.8"},{"1":"2023-02-22","2":"25.60000","3":"29.1","4":"22.4"},{"1":"2023-02-23","2":"26.44583","3":"31.5","4":"24.4"},{"1":"2023-02-24","2":"26.22917","3":"30.1","4":"24.4"},{"1":"2023-02-25","2":"26.57500","3":"30.2","4":"23.8"},{"1":"2023-02-26","2":"27.57500","3":"32.5","4":"24.3"},{"1":"2023-02-27","2":"26.40417","3":"28.5","4":"24.9"},{"1":"2023-02-28","2":"26.80417","3":"30.4","4":"24.8"},{"1":"2023-03-01","2":"25.35000","3":"28.7","4":"22.1"},{"1":"2023-03-02","2":"27.05000","3":"32.2","4":"24.4"},{"1":"2023-03-03","2":"27.39583","3":"31.3","4":"25.0"},{"1":"2023-03-04","2":"28.09167","3":"31.7","4":"25.5"},{"1":"2023-03-05","2":"27.39583","3":"30.9","4":"25.2"},{"1":"2023-03-06","2":"26.74583","3":"29.2","4":"25.3"},{"1":"2023-03-07","2":"27.85833","3":"30.4","4":"25.5"},{"1":"2023-03-08","2":"27.11667","3":"30.8","4":"25.5"},{"1":"2023-03-09","2":"27.35417","3":"31.8","4":"25.0"},{"1":"2023-03-10","2":"27.50000","3":"32.0","4":"25.0"},{"1":"2023-03-11","2":"26.22917","3":"28.1","4":"24.6"},{"1":"2023-03-12","2":"25.75417","3":"31.0","4":"23.2"},{"1":"2023-03-13","2":"26.34167","3":"31.7","4":"24.4"},{"1":"2023-03-14","2":"26.17500","3":"32.0","4":"23.9"},{"1":"2023-03-15","2":"26.01250","3":"31.7","4":"22.9"},{"1":"2023-03-16","2":"25.89167","3":"31.1","4":"23.1"},{"1":"2023-03-17","2":"25.54583","3":"31.5","4":"22.0"},{"1":"2023-03-18","2":"24.90833","3":"28.2","4":"22.6"},{"1":"2023-03-19","2":"25.30833","3":"29.5","4":"23.2"},{"1":"2023-03-20","2":"25.71250","3":"30.1","4":"23.1"},{"1":"2023-03-21","2":"24.42083","3":"27.9","4":"22.5"},{"1":"2023-03-22","2":"25.75417","3":"29.0","4":"23.7"},{"1":"2023-03-23","2":"26.52083","3":"31.7","4":"23.8"},{"1":"2023-03-24","2":"26.75000","3":"31.9","4":"24.3"},{"1":"2023-03-25","2":"25.80417","3":"27.9","4":"24.6"},{"1":"2023-03-26","2":"27.23333","3":"33.8","4":"24.0"},{"1":"2023-03-27","2":"25.50000","3":"27.8","4":"23.8"},{"1":"2023-03-28","2":"24.71250","3":"27.8","4":"21.7"},{"1":"2023-03-29","2":"26.25417","3":"30.7","4":"24.0"},{"1":"2023-03-30","2":"26.15417","3":"29.2","4":"24.5"},{"1":"2023-03-31","2":"25.72917","3":"30.8","4":"23.0"},{"1":"2023-04-01","2":"26.07083","3":"28.4","4":"23.9"},{"1":"2023-04-02","2":"24.23333","3":"25.8","4":"22.5"},{"1":"2023-04-03","2":"24.63333","3":"28.5","4":"22.7"},{"1":"2023-04-04","2":"25.16667","3":"29.7","4":"22.8"},{"1":"2023-04-05","2":"24.95417","3":"27.8","4":"22.6"},{"1":"2023-04-06","2":"25.01250","3":"28.4","4":"23.5"},{"1":"2023-04-07","2":"25.12500","3":"28.2","4":"23.7"},{"1":"2023-04-08","2":"23.24583","3":"24.2","4":"22.3"},{"1":"2023-04-09","2":"22.97083","3":"24.5","4":"21.6"},{"1":"2023-04-10","2":"23.35417","3":"25.7","4":"21.3"},{"1":"2023-04-11","2":"23.85833","3":"28.5","4":"21.1"},{"1":"2023-04-12","2":"24.22917","3":"29.8","4":"21.9"},{"1":"2023-04-13","2":"25.38333","3":"28.8","4":"22.6"},{"1":"2023-04-14","2":"25.31667","3":"28.7","4":"23.3"},{"1":"2023-04-15","2":"24.41250","3":"28.3","4":"22.3"},{"1":"2023-04-16","2":"24.19167","3":"26.5","4":"22.4"},{"1":"2023-04-17","2":"25.15000","3":"29.1","4":"22.8"},{"1":"2023-04-18","2":"26.19583","3":"29.0","4":"24.5"},{"1":"2023-04-19","2":"24.14583","3":"28.4","4":"22.8"},{"1":"2023-04-20","2":"23.97917","3":"25.8","4":"22.8"},{"1":"2023-04-21","2":"22.84167","3":"24.6","4":"21.4"},{"1":"2023-04-22","2":"23.60833","3":"27.9","4":"21.3"},{"1":"2023-04-23","2":"24.03750","3":"27.2","4":"22.1"},{"1":"2023-04-24","2":"23.26250","3":"27.2","4":"20.8"},{"1":"2023-04-25","2":"24.08750","3":"27.9","4":"21.4"},{"1":"2023-04-26","2":"24.49167","3":"28.4","4":"22.3"},{"1":"2023-04-27","2":"24.85000","3":"27.3","4":"22.7"},{"1":"2023-04-28","2":"22.47500","3":"24.2","4":"20.9"},{"1":"2023-04-29","2":"22.97500","3":"25.7","4":"20.8"},{"1":"2023-04-30","2":"24.42917","3":"28.7","4":"22.3"},{"1":"2023-05-01","2":"24.26667","3":"27.9","4":"22.2"},{"1":"2023-05-02","2":"24.26250","3":"27.7","4":"22.4"},{"1":"2023-05-03","2":"24.17083","3":"28.8","4":"22.1"},{"1":"2023-05-04","2":"24.01667","3":"28.1","4":"22.1"},{"1":"2023-05-05","2":"24.08750","3":"27.4","4":"22.3"},{"1":"2023-05-06","2":"24.28750","3":"28.2","4":"22.4"},{"1":"2023-05-07","2":"24.38333","3":"29.2","4":"22.5"},{"1":"2023-05-08","2":"24.28750","3":"28.7","4":"22.4"},{"1":"2023-05-09","2":"24.35833","3":"27.7","4":"22.6"},{"1":"2023-05-10","2":"22.76667","3":"24.3","4":"21.1"},{"1":"2023-05-11","2":"21.52917","3":"23.2","4":"20.1"},{"1":"2023-05-12","2":"21.60000","3":"24.4","4":"18.7"},{"1":"2023-05-13","2":"19.95417","3":"23.3","4":"17.7"},{"1":"2023-05-14","2":"21.45833","3":"25.0","4":"19.5"},{"1":"2023-05-15","2":"22.19167","3":"24.5","4":"20.3"},{"1":"2023-05-16","2":"22.20833","3":"25.6","4":"19.6"},{"1":"2023-05-17","2":"22.07917","3":"24.3","4":"19.8"},{"1":"2023-05-18","2":"21.73750","3":"23.8","4":"20.2"},{"1":"2023-05-19","2":"21.76667","3":"25.0","4":"20.1"},{"1":"2023-05-20","2":"21.64583","3":"25.3","4":"19.6"},{"1":"2023-05-21","2":"22.25417","3":"26.3","4":"19.5"},{"1":"2023-05-22","2":"22.92083","3":"26.8","4":"21.0"},{"1":"2023-05-23","2":"22.88750","3":"26.3","4":"20.7"},{"1":"2023-05-24","2":"23.84167","3":"27.5","4":"22.2"},{"1":"2023-05-25","2":"23.53750","3":"26.4","4":"21.6"},{"1":"2023-05-26","2":"23.45417","3":"27.7","4":"21.2"},{"1":"2023-05-27","2":"22.99583","3":"26.4","4":"21.2"},{"1":"2023-05-28","2":"23.10417","3":"25.1","4":"20.9"},{"1":"2023-05-29","2":"21.22917","3":"22.9","4":"19.6"},{"1":"2023-05-30","2":"21.62917","3":"23.9","4":"19.7"},{"1":"2023-05-31","2":"20.60417","3":"21.3","4":"19.8"},{"1":"2023-06-01","2":"21.60000","3":"23.1","4":"20.2"},{"1":"2023-06-02","2":"21.89583","3":"24.3","4":"20.4"},{"1":"2023-06-03","2":"21.51250","3":"25.1","4":"19.4"},{"1":"2023-06-04","2":"21.61250","3":"24.3","4":"19.8"},{"1":"2023-06-05","2":"21.78333","3":"24.9","4":"19.2"},{"1":"2023-06-06","2":"21.70417","3":"24.5","4":"20.2"},{"1":"2023-06-07","2":"21.41250","3":"25.5","4":"19.2"},{"1":"2023-06-08","2":"21.68750","3":"25.1","4":"19.6"},{"1":"2023-06-09","2":"22.00417","3":"24.5","4":"19.4"},{"1":"2023-06-10","2":"24.27500","3":"29.1","4":"20.5"},{"1":"2023-06-11","2":"26.50833","3":"30.8","4":"22.4"},{"1":"2023-06-12","2":"24.42083","3":"26.6","4":"22.3"},{"1":"2023-06-13","2":"22.72083","3":"24.6","4":"21.7"},{"1":"2023-06-14","2":"22.54583","3":"24.6","4":"21.4"},{"1":"2023-06-15","2":"22.66250","3":"25.7","4":"21.0"},{"1":"2023-06-16","2":"22.85833","3":"24.5","4":"22.0"},{"1":"2023-06-17","2":"21.22500","3":"22.2","4":"19.1"},{"1":"2023-06-18","2":"20.91250","3":"23.4","4":"19.3"},{"1":"2023-06-19","2":"20.42917","3":"22.3","4":"18.9"},{"1":"2023-06-20","2":"21.01250","3":"24.2","4":"19.3"},{"1":"2023-06-21","2":"20.96250","3":"25.0","4":"18.1"},{"1":"2023-06-22","2":"21.65833","3":"25.8","4":"19.1"},{"1":"2023-06-23","2":"22.25833","3":"25.1","4":"20.4"},{"1":"2023-06-24","2":"22.95000","3":"26.9","4":"20.5"},{"1":"2023-06-25","2":"23.00833","3":"26.1","4":"21.1"},{"1":"2023-06-26","2":"22.80417","3":"26.6","4":"20.2"},{"1":"2023-06-27","2":"23.39167","3":"25.7","4":"21.0"},{"1":"2023-06-28","2":"23.52917","3":"26.7","4":"21.2"},{"1":"2023-06-29","2":"22.98750","3":"24.9","4":"21.4"},{"1":"2023-06-30","2":"21.90833","3":"24.5","4":"20.5"},{"1":"2023-07-01","2":"21.34167","3":"24.9","4":"18.7"},{"1":"2023-07-02","2":"21.45417","3":"23.2","4":"18.9"},{"1":"2023-07-03","2":"20.75000","3":"22.7","4":"18.5"},{"1":"2023-07-04","2":"19.22917","3":"22.0","4":"17.4"},{"1":"2023-07-05","2":"19.90417","3":"23.3","4":"17.2"},{"1":"2023-07-06","2":"21.04286","3":"25.2","4":"18.6"},{"1":"2023-07-07","2":"23.16667","3":"29.0","4":"20.5"},{"1":"2023-07-08","2":"24.12500","3":"28.7","4":"19.7"},{"1":"2023-07-09","2":"22.93750","3":"27.9","4":"20.9"},{"1":"2023-07-10","2":"21.77500","3":"25.9","4":"20.4"},{"1":"2023-07-11","2":"22.85000","3":"26.2","4":"21.7"},{"1":"2023-07-12","2":"22.66667","3":"27.4","4":"21.3"},{"1":"2023-07-13","2":"28.47083","3":"35.3","4":"23.7"},{"1":"2023-07-14","2":"20.42083","3":"22.4","4":"18.6"},{"1":"2023-07-15","2":"19.77500","3":"23.3","4":"17.3"},{"1":"2023-07-16","2":"20.57917","3":"25.8","4":"17.9"},{"1":"2023-07-17","2":"21.22917","3":"24.2","4":"19.6"},{"1":"2023-07-18","2":"21.08333","3":"23.2","4":"20.0"},{"1":"2023-07-19","2":"20.49167","3":"22.2","4":"18.8"},{"1":"2023-07-20","2":"19.24167","3":"21.6","4":"17.7"},{"1":"2023-07-21","2":"20.97917","3":"24.4","4":"18.6"},{"1":"2023-07-22","2":"20.93750","3":"24.3","4":"18.8"},{"1":"2023-07-23","2":"21.62917","3":"25.5","4":"19.3"},{"1":"2023-07-24","2":"22.07500","3":"25.1","4":"19.9"},{"1":"2023-07-25","2":"22.24583","3":"25.5","4":"20.6"},{"1":"2023-07-26","2":"22.45000","3":"24.4","4":"20.5"},{"1":"2023-07-27","2":"23.11667","3":"26.1","4":"21.3"},{"1":"2023-07-28","2":"22.58750","3":"25.7","4":"21.0"},{"1":"2023-07-29","2":"20.63750","3":"22.4","4":"18.5"},{"1":"2023-07-30","2":"19.28750","3":"21.9","4":"16.8"},{"1":"2023-07-31","2":"20.65417","3":"23.9","4":"19.0"},{"1":"2023-08-01","2":"21.04167","3":"25.0","4":"19.0"},{"1":"2023-08-02","2":"21.09167","3":"23.9","4":"19.2"},{"1":"2023-08-03","2":"22.42500","3":"26.6","4":"19.0"},{"1":"2023-08-04","2":"21.79583","3":"24.4","4":"20.3"},{"1":"2023-08-05","2":"21.20417","3":"25.3","4":"19.4"},{"1":"2023-08-06","2":"22.30000","3":"26.1","4":"20.6"},{"1":"2023-08-07","2":"25.57500","3":"31.7","4":"21.4"},{"1":"2023-08-08","2":"23.00833","3":"27.0","4":"20.9"},{"1":"2023-08-09","2":"20.78333","3":"22.2","4":"19.2"},{"1":"2023-08-10","2":"22.30417","3":"26.2","4":"20.1"},{"1":"2023-08-11","2":"24.83333","3":"30.4","4":"21.7"},{"1":"2023-08-12","2":"24.45417","3":"30.0","4":"22.4"},{"1":"2023-08-13","2":"21.58750","3":"23.2","4":"20.2"},{"1":"2023-08-14","2":"19.49583","3":"20.2","4":"19.0"},{"1":"2023-08-15","2":"20.97083","3":"22.2","4":"20.0"},{"1":"2023-08-16","2":"21.97083","3":"24.4","4":"20.9"},{"1":"2023-08-17","2":"21.90833","3":"24.2","4":"20.2"},{"1":"2023-08-18","2":"24.68750","3":"30.4","4":"21.4"},{"1":"2023-08-19","2":"25.55417","3":"31.3","4":"21.1"},{"1":"2023-08-20","2":"20.77083","3":"22.9","4":"19.3"},{"1":"2023-08-21","2":"22.08333","3":"25.1","4":"19.9"},{"1":"2023-08-22","2":"23.07083","3":"25.3","4":"20.5"},{"1":"2023-08-23","2":"28.58333","3":"35.3","4":"22.2"},{"1":"2023-08-24","2":"32.26667","3":"38.2","4":"25.8"},{"1":"2023-08-25","2":"23.58333","3":"25.5","4":"21.6"},{"1":"2023-08-26","2":"18.95000","3":"22.5","4":"17.1"},{"1":"2023-08-27","2":"16.80833","3":"17.9","4":"15.8"},{"1":"2023-08-28","2":"17.07083","3":"18.4","4":"16.2"},{"1":"2023-08-29","2":"19.62083","3":"23.7","4":"17.6"},{"1":"2023-08-30","2":"21.11250","3":"24.3","4":"19.8"},{"1":"2023-08-31","2":"20.88750","3":"23.7","4":"18.6"},{"1":"2023-09-01","2":"21.93333","3":"25.9","4":"19.7"},{"1":"2023-09-02","2":"23.15417","3":"26.4","4":"20.8"},{"1":"2023-09-03","2":"23.79583","3":"26.2","4":"22.0"},{"1":"2023-09-04","2":"24.68750","3":"30.4","4":"22.8"},{"1":"2023-09-05","2":"25.57917","3":"31.6","4":"21.8"},{"1":"2023-09-06","2":"21.40000","3":"24.3","4":"19.4"},{"1":"2023-09-07","2":"20.56250","3":"22.3","4":"19.3"},{"1":"2023-09-08","2":"23.00833","3":"27.6","4":"20.1"},{"1":"2023-09-09","2":"25.60417","3":"30.6","4":"23.4"},{"1":"2023-09-10","2":"24.15417","3":"26.5","4":"22.1"},{"1":"2023-09-11","2":"23.62500","3":"27.9","4":"21.1"},{"1":"2023-09-12","2":"24.90000","3":"28.1","4":"23.0"},{"1":"2023-09-13","2":"27.19583","3":"32.0","4":"24.3"},{"1":"2023-09-14","2":"26.24783","3":"30.0","4":"19.6"},{"1":"2023-09-15","2":"19.55417","3":"22.2","4":"17.2"},{"1":"2023-09-16","2":"21.62083","3":"25.6","4":"19.3"},{"1":"2023-09-17","2":"24.96667","3":"33.0","4":"21.6"},{"1":"2023-09-18","2":"26.05417","3":"31.3","4":"23.0"},{"1":"2023-09-19","2":"24.40833","3":"27.3","4":"22.4"},{"1":"2023-09-20","2":"23.28333","3":"27.1","4":"21.6"},{"1":"2023-09-21","2":"24.26667","3":"27.8","4":"21.5"},{"1":"2023-09-22","2":"25.04167","3":"29.0","4":"22.7"},{"1":"2023-09-23","2":"23.87917","3":"27.1","4":"22.8"},{"1":"2023-09-24","2":"25.02917","3":"29.7","4":"22.6"},{"1":"2023-09-25","2":"25.06250","3":"29.0","4":"23.4"},{"1":"2023-09-26","2":"24.53750","3":"29.0","4":"22.4"},{"1":"2023-09-27","2":"27.29583","3":"38.3","4":"23.5"},{"1":"2023-09-28","2":"22.18750","3":"24.5","4":"20.4"},{"1":"2023-09-29","2":"21.41250","3":"23.0","4":"19.9"},{"1":"2023-09-30","2":"22.25417","3":"25.7","4":"20.6"},{"1":"2023-10-01","2":"21.83750","3":"23.9","4":"20.3"},{"1":"2023-10-02","2":"21.56667","3":"23.1","4":"19.2"},{"1":"2023-10-03","2":"21.55000","3":"25.4","4":"19.7"},{"1":"2023-10-04","2":"23.33750","3":"26.5","4":"21.1"},{"1":"2023-10-05","2":"23.82917","3":"25.8","4":"22.5"},{"1":"2023-10-06","2":"23.45833","3":"25.5","4":"22.6"},{"1":"2023-10-07","2":"26.04167","3":"34.5","4":"22.3"},{"1":"2023-10-08","2":"24.85833","3":"29.9","4":"22.5"},{"1":"2023-10-09","2":"24.12917","3":"28.9","4":"23.0"},{"1":"2023-10-10","2":"22.75417","3":"24.3","4":"21.5"},{"1":"2023-10-11","2":"23.88333","3":"27.7","4":"21.4"},{"1":"2023-10-12","2":"25.75833","3":"31.2","4":"23.6"},{"1":"2023-10-13","2":"22.96250","3":"25.0","4":"21.0"},{"1":"2023-10-14","2":"20.24167","3":"21.0","4":"19.5"},{"1":"2023-10-15","2":"22.24583","3":"25.9","4":"19.8"},{"1":"2023-10-16","2":"24.50417","3":"30.1","4":"22.0"},{"1":"2023-10-17","2":"24.83333","3":"31.4","4":"21.3"},{"1":"2023-10-18","2":"23.57500","3":"24.5","4":"22.6"},{"1":"2023-10-19","2":"21.45417","3":"22.4","4":"20.6"},{"1":"2023-10-20","2":"21.13333","3":"22.2","4":"19.8"},{"1":"2023-10-21","2":"22.09583","3":"25.6","4":"20.8"},{"1":"2023-10-22","2":"22.23333","3":"24.9","4":"20.8"},{"1":"2023-10-23","2":"23.25833","3":"28.0","4":"20.1"},{"1":"2023-10-24","2":"24.72500","3":"28.4","4":"22.3"},{"1":"2023-10-25","2":"23.53750","3":"26.0","4":"22.4"},{"1":"2023-10-26","2":"22.49583","3":"25.7","4":"20.9"},{"1":"2023-10-27","2":"22.06250","3":"23.6","4":"21.3"},{"1":"2023-10-28","2":"23.74167","3":"26.1","4":"22.2"},{"1":"2023-10-29","2":"27.88750","3":"34.0","4":"24.0"},{"1":"2023-10-30","2":"25.53333","3":"27.2","4":"23.6"},{"1":"2023-10-31","2":"26.00000","3":"28.7","4":"24.2"},{"1":"2023-11-01","2":"24.11250","3":"25.9","4":"22.1"},{"1":"2023-11-02","2":"22.86250","3":"24.8","4":"21.1"},{"1":"2023-11-03","2":"24.60833","3":"28.6","4":"21.8"},{"1":"2023-11-04","2":"24.42500","3":"27.5","4":"22.1"},{"1":"2023-11-05","2":"22.91250","3":"24.9","4":"21.7"},{"1":"2023-11-06","2":"22.36250","3":"25.0","4":"20.3"},{"1":"2023-11-07","2":"23.33333","3":"28.8","4":"21.0"},{"1":"2023-11-08","2":"23.22917","3":"26.8","4":"20.1"},{"1":"2023-11-09","2":"25.58333","3":"30.5","4":"22.1"},{"1":"2023-11-10","2":"24.98750","3":"27.2","4":"23.5"},{"1":"2023-11-11","2":"25.15000","3":"29.7","4":"22.5"},{"1":"2023-11-12","2":"26.97500","3":"30.8","4":"24.6"},{"1":"2023-11-13","2":"26.29167","3":"30.7","4":"23.8"},{"1":"2023-11-14","2":"26.47083","3":"30.4","4":"24.0"},{"1":"2023-11-15","2":"25.87917","3":"28.3","4":"24.3"},{"1":"2023-11-16","2":"27.69167","3":"31.7","4":"24.7"},{"1":"2023-11-17","2":"27.25833","3":"30.4","4":"25.2"},{"1":"2023-11-18","2":"28.63750","3":"31.9","4":"25.8"},{"1":"2023-11-19","2":"26.37917","3":"29.9","4":"23.3"},{"1":"2023-11-20","2":"23.10417","3":"24.1","4":"22.1"},{"1":"2023-11-21","2":"24.32083","3":"29.4","4":"21.8"},{"1":"2023-11-22","2":"25.91667","3":"28.8","4":"23.2"},{"1":"2023-11-23","2":"26.40833","3":"29.3","4":"24.1"},{"1":"2023-11-24","2":"23.76250","3":"25.1","4":"22.7"},{"1":"2023-11-25","2":"23.73333","3":"28.5","4":"21.2"},{"1":"2023-11-26","2":"22.74583","3":"25.9","4":"20.9"},{"1":"2023-11-27","2":"24.25833","3":"27.8","4":"22.7"},{"1":"2023-11-28","2":"24.33750","3":"26.3","4":"22.8"},{"1":"2023-11-29","2":"25.15417","3":"30.2","4":"21.4"},{"1":"2023-11-30","2":"26.81250","3":"29.4","4":"22.7"},{"1":"2023-12-01","2":"25.85833","3":"28.7","4":"23.1"},{"1":"2023-12-02","2":"26.75833","3":"31.9","4":"24.4"},{"1":"2023-12-03","2":"26.13333","3":"29.7","4":"23.9"},{"1":"2023-12-04","2":"26.37083","3":"30.2","4":"24.4"},{"1":"2023-12-05","2":"26.48333","3":"28.7","4":"25.5"},{"1":"2023-12-06","2":"27.25000","3":"32.4","4":"24.6"},{"1":"2023-12-07","2":"28.80870","3":"32.7","4":"26.4"},{"1":"2023-12-08","2":"26.86667","3":"28.8","4":"24.6"},{"1":"2023-12-09","2":"23.05833","3":"26.0","4":"21.2"},{"1":"2023-12-10","2":"23.24167","3":"25.3","4":"21.8"},{"1":"2023-12-11","2":"23.08333","3":"25.2","4":"21.4"},{"1":"2023-12-12","2":"24.13750","3":"26.6","4":"22.6"},{"1":"2023-12-13","2":"24.48750","3":"29.9","4":"21.3"},{"1":"2023-12-14","2":"24.97083","3":"28.1","4":"21.7"},{"1":"2023-12-15","2":"25.55417","3":"29.4","4":"23.2"},{"1":"2023-12-16","2":"25.49583","3":"27.9","4":"22.3"},{"1":"2023-12-17","2":"23.87917","3":"26.5","4":"20.5"},{"1":"2023-12-18","2":"22.27917","3":"25.2","4":"19.8"},{"1":"2023-12-19","2":"23.19583","3":"28.2","4":"19.9"},{"1":"2023-12-20","2":"23.70417","3":"27.8","4":"20.2"},{"1":"2023-12-21","2":"24.74583","3":"28.5","4":"21.2"},{"1":"2023-12-22","2":"25.51667","3":"31.2","4":"21.5"},{"1":"2023-12-23","2":"26.13333","3":"30.0","4":"23.8"},{"1":"2023-12-24","2":"26.20000","3":"30.9","4":"23.9"},{"1":"2023-12-25","2":"27.02500","3":"30.8","4":"24.5"},{"1":"2023-12-26","2":"27.80833","3":"33.5","4":"24.0"},{"1":"2023-12-27","2":"24.47083","3":"27.7","4":"22.2"},{"1":"2023-12-28","2":"25.43750","3":"31.2","4":"22.6"},{"1":"2023-12-29","2":"26.48750","3":"29.7","4":"23.2"},{"1":"2023-12-30","2":"26.75833","3":"31.6","4":"23.2"},{"1":"2023-12-31","2":"23.49583","3":"24.8","4":"21.8"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>agrupamento_diario_2022 &lt;- dados_clima_2022 %&gt;%
+  group_by(dia = floor_date(datetime, &quot;day&quot;)) %&gt;%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+
+agrupamento_semanal_2022 &lt;- dados_clima_2022 %&gt;%
+  group_by(semana = floor_date(datetime, &quot;week&quot;)) %&gt;%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+
+agrupamento_mensal_2022 &lt;- dados_clima_2022 %&gt;%
+  group_by(mes = floor_date(datetime, &quot;month&quot;)) %&gt;%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+agrupamento_bimestral_2022 &lt;- dados_clima_2022 %&gt;%
+  group_by(bimestre = cut(datetime, breaks = &quot;2 months&quot;, labels = FALSE)) %&gt;%
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+agrupamento_semestral_2022 &lt;- dados_clima_2022 %&gt;%
+  group_by(semestre = semester(datetime)) %&gt;%  # Define o semestre com lubridate
+  summarise(
+    Media_Temperatura = mean(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Maxima_Temperatura = max(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    Minima_Temperatura = min(`TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+
+agrupamento_diario_2022</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["dia"],"name":[1],"type":["dttm"],"align":["right"]},{"label":["Media_Temperatura"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Maxima_Temperatura"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Minima_Temperatura"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"2022-01-01","2":"24.66250","3":"27.3","4":"22.4"},{"1":"2022-01-02","2":"25.92917","3":"28.9","4":"23.9"},{"1":"2022-01-03","2":"26.46250","3":"32.8","4":"23.4"},{"1":"2022-01-04","2":"26.14167","3":"28.6","4":"24.3"},{"1":"2022-01-05","2":"27.97917","3":"33.0","4":"23.9"},{"1":"2022-01-06","2":"25.49583","3":"31.2","4":"22.3"},{"1":"2022-01-07","2":"23.64167","3":"24.2","4":"23.1"},{"1":"2022-01-08","2":"22.85417","3":"23.9","4":"21.9"},{"1":"2022-01-09","2":"22.42083","3":"25.3","4":"20.1"},{"1":"2022-01-10","2":"22.08333","3":"24.3","4":"20.2"},{"1":"2022-01-11","2":"23.65833","3":"26.9","4":"22.3"},{"1":"2022-01-12","2":"24.59167","3":"26.7","4":"23.4"},{"1":"2022-01-13","2":"26.04583","3":"30.5","4":"23.9"},{"1":"2022-01-14","2":"27.36667","3":"31.8","4":"24.5"},{"1":"2022-01-15","2":"26.18750","3":"28.9","4":"24.6"},{"1":"2022-01-16","2":"25.47917","3":"28.5","4":"22.8"},{"1":"2022-01-17","2":"25.98750","3":"29.2","4":"23.1"},{"1":"2022-01-18","2":"26.30000","3":"28.7","4":"23.9"},{"1":"2022-01-19","2":"24.99583","3":"28.5","4":"22.2"},{"1":"2022-01-20","2":"24.94167","3":"28.3","4":"22.1"},{"1":"2022-01-21","2":"25.65833","3":"30.3","4":"22.6"},{"1":"2022-01-22","2":"24.61250","3":"29.9","4":"22.2"},{"1":"2022-01-23","2":"24.22917","3":"27.3","4":"21.6"},{"1":"2022-01-24","2":"24.71250","3":"28.1","4":"22.1"},{"1":"2022-01-25","2":"24.33333","3":"27.2","4":"21.7"},{"1":"2022-01-26","2":"24.60417","3":"29.2","4":"20.9"},{"1":"2022-01-27","2":"29.86667","3":"36.8","4":"25.4"},{"1":"2022-01-28","2":"24.52083","3":"29.7","4":"22.2"},{"1":"2022-01-29","2":"24.20417","3":"26.8","4":"23.0"},{"1":"2022-01-30","2":"23.81667","3":"25.8","4":"21.8"},{"1":"2022-01-31","2":"24.53750","3":"27.1","4":"22.9"},{"1":"2022-02-01","2":"25.51667","3":"28.4","4":"23.5"},{"1":"2022-02-02","2":"25.04583","3":"27.7","4":"23.5"},{"1":"2022-02-03","2":"25.75833","3":"30.4","4":"23.5"},{"1":"2022-02-04","2":"25.25000","3":"27.9","4":"23.6"},{"1":"2022-02-05","2":"26.94167","3":"30.6","4":"23.7"},{"1":"2022-02-06","2":"27.22083","3":"29.0","4":"25.3"},{"1":"2022-02-07","2":"26.37917","3":"29.7","4":"24.1"},{"1":"2022-02-08","2":"23.90000","3":"24.6","4":"22.2"},{"1":"2022-02-09","2":"22.83333","3":"26.4","4":"21.0"},{"1":"2022-02-10","2":"23.18333","3":"27.2","4":"20.9"},{"1":"2022-02-11","2":"23.68333","3":"26.0","4":"21.2"},{"1":"2022-02-12","2":"24.84583","3":"27.4","4":"23.2"},{"1":"2022-02-13","2":"25.55000","3":"30.0","4":"22.7"},{"1":"2022-02-14","2":"26.27083","3":"31.8","4":"23.9"},{"1":"2022-02-15","2":"25.71250","3":"27.4","4":"24.3"},{"1":"2022-02-16","2":"25.68333","3":"29.4","4":"23.8"},{"1":"2022-02-17","2":"25.87083","3":"29.9","4":"23.1"},{"1":"2022-02-18","2":"23.82917","3":"25.9","4":"23.1"},{"1":"2022-02-19","2":"24.59167","3":"28.1","4":"22.7"},{"1":"2022-02-20","2":"25.20417","3":"28.4","4":"23.4"},{"1":"2022-02-21","2":"26.22917","3":"30.7","4":"24.0"},{"1":"2022-02-22","2":"26.27917","3":"29.8","4":"23.9"},{"1":"2022-02-23","2":"26.39167","3":"30.1","4":"23.9"},{"1":"2022-02-24","2":"26.27083","3":"29.0","4":"24.3"},{"1":"2022-02-25","2":"27.10417","3":"32.1","4":"24.6"},{"1":"2022-02-26","2":"26.57500","3":"31.7","4":"24.1"},{"1":"2022-02-27","2":"26.30833","3":"31.6","4":"24.1"},{"1":"2022-02-28","2":"25.53750","3":"29.1","4":"23.4"},{"1":"2022-03-01","2":"27.23750","3":"33.8","4":"24.4"},{"1":"2022-03-02","2":"26.14167","3":"30.2","4":"23.5"},{"1":"2022-03-03","2":"25.02500","3":"28.7","4":"21.6"},{"1":"2022-03-04","2":"24.48750","3":"27.6","4":"22.0"},{"1":"2022-03-05","2":"25.59167","3":"30.2","4":"22.8"},{"1":"2022-03-06","2":"26.03750","3":"29.7","4":"23.3"},{"1":"2022-03-07","2":"26.12917","3":"29.0","4":"23.6"},{"1":"2022-03-08","2":"25.82917","3":"30.8","4":"22.9"},{"1":"2022-03-09","2":"24.82083","3":"29.5","4":"22.2"},{"1":"2022-03-10","2":"24.75417","3":"28.6","4":"21.5"},{"1":"2022-03-11","2":"26.18750","3":"28.7","4":"22.5"},{"1":"2022-03-12","2":"26.10000","3":"28.3","4":"24.7"},{"1":"2022-03-13","2":"25.48750","3":"28.1","4":"22.8"},{"1":"2022-03-14","2":"26.55000","3":"31.9","4":"24.2"},{"1":"2022-03-15","2":"27.04583","3":"32.4","4":"24.6"},{"1":"2022-03-16","2":"27.37917","3":"32.8","4":"25.0"},{"1":"2022-03-17","2":"27.59167","3":"30.5","4":"25.5"},{"1":"2022-03-18","2":"27.99583","3":"32.7","4":"25.5"},{"1":"2022-03-19","2":"28.32500","3":"33.7","4":"25.5"},{"1":"2022-03-20","2":"26.54583","3":"28.6","4":"24.7"},{"1":"2022-03-21","2":"23.97500","3":"26.9","4":"22.1"},{"1":"2022-03-22","2":"24.26250","3":"29.5","4":"22.7"},{"1":"2022-03-23","2":"25.54583","3":"32.3","4":"22.5"},{"1":"2022-03-24","2":"26.05833","3":"31.7","4":"23.1"},{"1":"2022-03-25","2":"27.67500","3":"32.8","4":"24.9"},{"1":"2022-03-26","2":"26.57083","3":"30.3","4":"24.0"},{"1":"2022-03-27","2":"26.14583","3":"29.0","4":"24.2"},{"1":"2022-03-28","2":"25.64583","3":"29.7","4":"23.3"},{"1":"2022-03-29","2":"25.45833","3":"28.4","4":"24.3"},{"1":"2022-03-30","2":"26.54583","3":"31.9","4":"24.0"},{"1":"2022-03-31","2":"25.91250","3":"28.9","4":"22.7"},{"1":"2022-04-01","2":"23.02500","3":"24.9","4":"22.0"},{"1":"2022-04-02","2":"23.64167","3":"25.7","4":"22.7"},{"1":"2022-04-03","2":"24.55833","3":"26.7","4":"23.1"},{"1":"2022-04-04","2":"25.50000","3":"29.4","4":"23.4"},{"1":"2022-04-05","2":"25.09167","3":"26.6","4":"24.1"},{"1":"2022-04-06","2":"24.50417","3":"25.5","4":"23.4"},{"1":"2022-04-07","2":"24.30000","3":"26.1","4":"23.3"},{"1":"2022-04-08","2":"25.27500","3":"29.8","4":"23.1"},{"1":"2022-04-09","2":"25.38750","3":"29.1","4":"22.6"},{"1":"2022-04-10","2":"25.47917","3":"29.1","4":"23.8"},{"1":"2022-04-11","2":"25.67083","3":"30.0","4":"23.2"},{"1":"2022-04-12","2":"25.71250","3":"30.1","4":"23.5"},{"1":"2022-04-13","2":"25.94583","3":"28.1","4":"24.9"},{"1":"2022-04-14","2":"24.38333","3":"26.5","4":"21.9"},{"1":"2022-04-15","2":"22.72500","3":"24.4","4":"21.2"},{"1":"2022-04-16","2":"22.08333","3":"24.1","4":"19.1"},{"1":"2022-04-17","2":"22.03750","3":"23.9","4":"19.7"},{"1":"2022-04-18","2":"22.77917","3":"25.7","4":"20.8"},{"1":"2022-04-19","2":"23.32500","3":"28.6","4":"20.9"},{"1":"2022-04-20","2":"23.22083","3":"25.3","4":"21.5"},{"1":"2022-04-21","2":"23.42917","3":"25.4","4":"21.6"},{"1":"2022-04-22","2":"24.09167","3":"26.4","4":"22.1"},{"1":"2022-04-23","2":"28.33750","3":"35.3","4":"23.9"},{"1":"2022-04-24","2":"25.10000","3":"26.8","4":"23.7"},{"1":"2022-04-25","2":"24.69167","3":"28.0","4":"23.7"},{"1":"2022-04-26","2":"24.85417","3":"29.2","4":"22.8"},{"1":"2022-04-27","2":"25.30833","3":"28.9","4":"23.4"},{"1":"2022-04-28","2":"26.57500","3":"29.1","4":"23.9"},{"1":"2022-04-29","2":"25.85417","3":"27.1","4":"24.3"},{"1":"2022-04-30","2":"23.97083","3":"25.1","4":"22.4"},{"1":"2022-05-01","2":"24.22917","3":"27.1","4":"22.3"},{"1":"2022-05-02","2":"25.69167","3":"27.5","4":"24.0"},{"1":"2022-05-03","2":"26.00000","3":"29.7","4":"23.8"},{"1":"2022-05-04","2":"26.60833","3":"33.4","4":"22.8"},{"1":"2022-05-05","2":"23.97500","3":"25.9","4":"22.8"},{"1":"2022-05-06","2":"23.27917","3":"24.6","4":"22.3"},{"1":"2022-05-07","2":"22.19167","3":"23.8","4":"21.0"},{"1":"2022-05-08","2":"22.10000","3":"24.8","4":"20.5"},{"1":"2022-05-09","2":"22.54167","3":"26.7","4":"20.5"},{"1":"2022-05-10","2":"22.52083","3":"26.8","4":"20.0"},{"1":"2022-05-11","2":"23.70000","3":"28.6","4":"20.9"},{"1":"2022-05-12","2":"23.21250","3":"25.4","4":"21.2"},{"1":"2022-05-13","2":"22.92500","3":"24.6","4":"21.4"},{"1":"2022-05-14","2":"22.97917","3":"25.8","4":"21.1"},{"1":"2022-05-15","2":"22.67083","3":"26.5","4":"20.9"},{"1":"2022-05-16","2":"23.90417","3":"27.0","4":"21.1"},{"1":"2022-05-17","2":"21.48333","3":"23.3","4":"19.9"},{"1":"2022-05-18","2":"20.27500","3":"23.1","4":"17.6"},{"1":"2022-05-19","2":"19.62500","3":"21.4","4":"17.5"},{"1":"2022-05-20","2":"19.54583","3":"20.9","4":"18.2"},{"1":"2022-05-21","2":"19.77391","3":"23.3","4":"18.0"},{"1":"2022-05-22","2":"20.92500","3":"24.5","4":"18.2"},{"1":"2022-05-23","2":"21.42083","3":"24.5","4":"18.9"},{"1":"2022-05-24","2":"22.22917","3":"25.5","4":"19.8"},{"1":"2022-05-25","2":"22.91250","3":"26.1","4":"20.6"},{"1":"2022-05-26","2":"22.36500","3":"24.4","4":"20.9"},{"1":"2022-05-27","2":"22.84167","3":"25.6","4":"20.6"},{"1":"2022-05-28","2":"23.84583","3":"28.3","4":"20.9"},{"1":"2022-05-29","2":"24.84583","3":"28.2","4":"21.6"},{"1":"2022-05-30","2":"25.62500","3":"28.4","4":"22.7"},{"1":"2022-05-31","2":"22.97083","3":"24.1","4":"22.4"},{"1":"2022-06-01","2":"23.03043","3":"25.4","4":"21.9"},{"1":"2022-06-02","2":"22.52500","3":"24.3","4":"21.9"},{"1":"2022-06-03","2":"21.08750","3":"22.4","4":"19.6"},{"1":"2022-06-04","2":"19.10000","3":"20.1","4":"18.2"},{"1":"2022-06-05","2":"19.88333","3":"22.3","4":"17.6"},{"1":"2022-06-06","2":"20.41667","3":"23.8","4":"17.5"},{"1":"2022-06-07","2":"22.82917","3":"25.6","4":"21.1"},{"1":"2022-06-08","2":"22.05000","3":"24.1","4":"20.8"},{"1":"2022-06-09","2":"21.97500","3":"23.7","4":"21.0"},{"1":"2022-06-10","2":"22.33750","3":"27.5","4":"19.3"},{"1":"2022-06-11","2":"19.42917","3":"21.4","4":"17.7"},{"1":"2022-06-12","2":"18.94583","3":"20.6","4":"17.7"},{"1":"2022-06-13","2":"19.72500","3":"21.4","4":"18.1"},{"1":"2022-06-14","2":"19.05417","3":"20.8","4":"17.8"},{"1":"2022-06-15","2":"19.69167","3":"22.5","4":"17.6"},{"1":"2022-06-16","2":"19.76522","3":"23.5","4":"17.5"},{"1":"2022-06-17","2":"20.31429","3":"23.9","4":"17.9"},{"1":"2022-06-18","2":"22.22500","3":"25.0","4":"19.8"},{"1":"2022-06-19","2":"19.32917","3":"20.6","4":"18.2"},{"1":"2022-06-20","2":"20.28333","3":"22.9","4":"18.2"},{"1":"2022-06-21","2":"21.25500","3":"23.0","4":"19.3"},{"1":"2022-06-22","2":"23.06364","3":"26.8","4":"20.7"},{"1":"2022-06-23","2":"23.45455","3":"26.7","4":"20.8"},{"1":"2022-06-24","2":"22.47391","3":"25.5","4":"20.2"},{"1":"2022-06-25","2":"20.49583","3":"22.5","4":"18.8"},{"1":"2022-06-26","2":"20.11250","3":"21.2","4":"19.2"},{"1":"2022-06-27","2":"18.65833","3":"21.6","4":"17.0"},{"1":"2022-06-28","2":"19.57273","3":"22.7","4":"17.1"},{"1":"2022-06-29","2":"23.47273","3":"29.0","4":"19.8"},{"1":"2022-06-30","2":"21.00833","3":"24.4","4":"19.0"},{"1":"2022-07-01","2":"20.30417","3":"22.6","4":"18.6"},{"1":"2022-07-02","2":"21.33636","3":"24.0","4":"19.1"},{"1":"2022-07-03","2":"23.29583","3":"26.6","4":"21.5"},{"1":"2022-07-04","2":"22.43750","3":"24.5","4":"20.1"},{"1":"2022-07-05","2":"23.42917","3":"27.4","4":"20.9"},{"1":"2022-07-06","2":"23.18333","3":"27.3","4":"20.8"},{"1":"2022-07-07","2":"23.80000","3":"28.2","4":"21.6"},{"1":"2022-07-08","2":"23.02500","3":"26.5","4":"21.2"},{"1":"2022-07-09","2":"21.57500","3":"23.4","4":"20.0"},{"1":"2022-07-10","2":"22.42917","3":"26.1","4":"20.3"},{"1":"2022-07-11","2":"22.99583","3":"26.0","4":"20.9"},{"1":"2022-07-12","2":"26.11250","3":"31.4","4":"22.0"},{"1":"2022-07-13","2":"22.52917","3":"26.6","4":"21.2"},{"1":"2022-07-14","2":"21.69583","3":"23.7","4":"20.3"},{"1":"2022-07-15","2":"23.08750","3":"26.6","4":"21.2"},{"1":"2022-07-16","2":"25.10833","3":"29.3","4":"23.2"},{"1":"2022-07-17","2":"26.06250","3":"29.5","4":"22.5"},{"1":"2022-07-18","2":"21.85417","3":"23.7","4":"20.8"},{"1":"2022-07-19","2":"22.19583","3":"27.4","4":"21.0"},{"1":"2022-07-20","2":"21.95417","3":"23.8","4":"21.1"},{"1":"2022-07-21","2":"21.79583","3":"24.9","4":"20.2"},{"1":"2022-07-22","2":"21.84167","3":"25.4","4":"19.7"},{"1":"2022-07-23","2":"22.36667","3":"25.7","4":"20.4"},{"1":"2022-07-24","2":"22.71667","3":"25.2","4":"20.6"},{"1":"2022-07-25","2":"21.90909","3":"24.8","4":"20.2"},{"1":"2022-07-26","2":"21.90000","3":"23.8","4":"20.5"},{"1":"2022-07-27","2":"22.27083","3":"25.2","4":"20.3"},{"1":"2022-07-28","2":"24.86250","3":"30.1","4":"20.6"},{"1":"2022-07-29","2":"25.37917","3":"31.2","4":"18.9"},{"1":"2022-07-30","2":"20.04583","3":"22.8","4":"18.8"},{"1":"2022-07-31","2":"20.12500","3":"22.9","4":"18.4"},{"1":"2022-08-01","2":"20.95833","3":"23.7","4":"18.7"},{"1":"2022-08-02","2":"21.91667","3":"24.5","4":"20.5"},{"1":"2022-08-03","2":"21.76667","3":"25.2","4":"20.3"},{"1":"2022-08-04","2":"23.39583","3":"28.8","4":"19.9"},{"1":"2022-08-05","2":"27.51667","3":"35.4","4":"21.8"},{"1":"2022-08-06","2":"20.48333","3":"21.5","4":"19.2"},{"1":"2022-08-07","2":"21.22083","3":"23.0","4":"19.3"},{"1":"2022-08-08","2":"21.93333","3":"23.5","4":"21.1"},{"1":"2022-08-09","2":"21.83333","3":"24.0","4":"20.5"},{"1":"2022-08-10","2":"21.25417","3":"26.2","4":"20.1"},{"1":"2022-08-11","2":"19.94167","3":"21.9","4":"18.1"},{"1":"2022-08-12","2":"20.07083","3":"23.3","4":"18.1"},{"1":"2022-08-13","2":"20.15455","3":"24.3","4":"18.0"},{"1":"2022-08-14","2":"21.00000","3":"24.3","4":"18.6"},{"1":"2022-08-15","2":"22.42500","3":"27.2","4":"19.4"},{"1":"2022-08-16","2":"26.90833","3":"32.5","4":"21.7"},{"1":"2022-08-17","2":"23.40833","3":"26.5","4":"21.5"},{"1":"2022-08-18","2":"25.40417","3":"31.7","4":"20.5"},{"1":"2022-08-19","2":"20.00417","3":"25.8","4":"16.4"},{"1":"2022-08-20","2":"17.26250","3":"18.6","4":"15.4"},{"1":"2022-08-21","2":"18.13478","3":"21.4","4":"16.6"},{"1":"2022-08-22","2":"19.63333","3":"22.1","4":"18.0"},{"1":"2022-08-23","2":"20.44348","3":"24.2","4":"18.2"},{"1":"2022-08-24","2":"19.96667","3":"21.3","4":"18.7"},{"1":"2022-08-25","2":"20.71000","3":"24.3","4":"18.8"},{"1":"2022-08-26","2":"21.75000","3":"24.3","4":"20.8"},{"1":"2022-08-27","2":"22.26500","3":"24.4","4":"20.4"},{"1":"2022-08-28","2":"23.85000","3":"28.1","4":"21.5"},{"1":"2022-08-29","2":"19.43750","3":"21.6","4":"16.0"},{"1":"2022-08-30","2":"17.57143","3":"19.4","4":"15.8"},{"1":"2022-08-31","2":"18.48095","3":"22.0","4":"16.3"},{"1":"2022-09-01","2":"19.35000","3":"23.4","4":"16.5"},{"1":"2022-09-02","2":"20.31176","3":"23.1","4":"18.7"},{"1":"2022-09-03","2":"21.54348","3":"22.9","4":"20.2"},{"1":"2022-09-04","2":"18.22917","3":"20.9","4":"16.7"},{"1":"2022-09-05","2":"18.45294","3":"22.7","4":"16.3"},{"1":"2022-09-07","2":"20.90833","3":"24.3","4":"17.9"},{"1":"2022-09-08","2":"20.84000","3":"21.7","4":"20.1"},{"1":"2022-09-09","2":"26.01875","3":"33.6","4":"22.3"},{"1":"2022-09-10","2":"26.72917","3":"35.2","4":"21.5"},{"1":"2022-09-11","2":"19.44167","3":"21.7","4":"17.5"},{"1":"2022-09-12","2":"19.80000","3":"21.0","4":"18.8"},{"1":"2022-09-13","2":"19.24545","3":"20.3","4":"18.9"},{"1":"2022-09-14","2":"20.98000","3":"21.6","4":"20.6"},{"1":"2022-09-15","2":"19.43333","3":"20.6","4":"18.6"},{"1":"2022-09-16","2":"17.81250","3":"18.9","4":"16.8"},{"1":"2022-09-17","2":"17.12500","3":"19.6","4":"16.3"},{"1":"2022-09-18","2":"18.76667","3":"19.7","4":"17.4"},{"1":"2022-09-19","2":"18.65000","3":"19.1","4":"18.3"},{"1":"2022-09-21","2":"21.10000","3":"21.1","4":"21.1"},{"1":"2022-09-22","2":"21.50000","3":"21.5","4":"21.5"},{"1":"2022-09-23","2":"21.57500","3":"21.9","4":"21.3"},{"1":"2022-09-24","2":"19.30000","3":"19.3","4":"19.3"},{"1":"2022-09-25","2":"19.30000","3":"19.3","4":"19.3"},{"1":"2022-09-27","2":"20.30000","3":"20.3","4":"20.3"},{"1":"2022-09-29","2":"18.75000","3":"18.8","4":"18.7"},{"1":"2022-09-30","2":"19.51667","3":"20.7","4":"17.8"},{"1":"2022-10-01","2":"21.04167","3":"24.8","4":"19.1"},{"1":"2022-10-02","2":"21.53750","3":"23.9","4":"20.5"},{"1":"2022-10-03","2":"20.71667","3":"22.8","4":"19.8"},{"1":"2022-10-04","2":"21.28750","3":"24.8","4":"20.0"},{"1":"2022-10-05","2":"21.43750","3":"23.6","4":"20.8"},{"1":"2022-10-06","2":"22.71250","3":"26.6","4":"20.5"},{"1":"2022-10-07","2":"24.72083","3":"29.5","4":"22.0"},{"1":"2022-10-08","2":"22.90000","3":"25.2","4":"21.6"},{"1":"2022-10-09","2":"22.73333","3":"25.5","4":"20.9"},{"1":"2022-10-10","2":"22.45417","3":"25.3","4":"20.8"},{"1":"2022-10-11","2":"22.85000","3":"25.5","4":"21.6"},{"1":"2022-10-12","2":"22.31667","3":"23.3","4":"21.5"},{"1":"2022-10-13","2":"24.00833","3":"27.4","4":"21.4"},{"1":"2022-10-14","2":"22.99583","3":"25.5","4":"21.7"},{"1":"2022-10-15","2":"23.87500","3":"29.0","4":"22.2"},{"1":"2022-10-16","2":"22.82917","3":"25.6","4":"21.1"},{"1":"2022-10-17","2":"23.35417","3":"26.7","4":"21.0"},{"1":"2022-10-18","2":"24.10833","3":"27.4","4":"22.3"},{"1":"2022-10-19","2":"23.23750","3":"24.8","4":"21.7"},{"1":"2022-10-20","2":"24.59167","3":"29.6","4":"22.0"},{"1":"2022-10-21","2":"24.80000","3":"29.9","4":"22.6"},{"1":"2022-10-22","2":"25.82917","3":"32.2","4":"22.9"},{"1":"2022-10-23","2":"23.25000","3":"26.4","4":"21.2"},{"1":"2022-10-24","2":"23.83750","3":"28.7","4":"21.4"},{"1":"2022-10-25","2":"23.15417","3":"26.2","4":"21.7"},{"1":"2022-10-26","2":"23.35000","3":"28.7","4":"20.6"},{"1":"2022-10-27","2":"24.96667","3":"29.3","4":"21.6"},{"1":"2022-10-28","2":"25.55417","3":"29.4","4":"22.9"},{"1":"2022-10-29","2":"25.12500","3":"29.0","4":"22.6"},{"1":"2022-10-30","2":"26.41250","3":"28.6","4":"24.1"},{"1":"2022-10-31","2":"27.60833","3":"32.3","4":"22.7"},{"1":"2022-11-01","2":"22.38750","3":"24.4","4":"19.2"},{"1":"2022-11-02","2":"19.55417","3":"21.7","4":"17.7"},{"1":"2022-11-03","2":"19.93333","3":"23.6","4":"17.0"},{"1":"2022-11-04","2":"19.18750","3":"22.9","4":"16.3"},{"1":"2022-11-05","2":"20.51667","3":"23.9","4":"17.3"},{"1":"2022-11-06","2":"21.17500","3":"24.4","4":"17.1"},{"1":"2022-11-07","2":"19.65417","3":"21.2","4":"17.9"},{"1":"2022-11-08","2":"19.75000","3":"23.2","4":"17.9"},{"1":"2022-11-09","2":"21.72500","3":"27.2","4":"19.0"},{"1":"2022-11-10","2":"23.95000","3":"28.7","4":"21.2"},{"1":"2022-11-11","2":"24.84583","3":"30.1","4":"22.2"},{"1":"2022-11-12","2":"24.49583","3":"28.9","4":"21.3"},{"1":"2022-11-13","2":"24.53750","3":"27.0","4":"22.2"},{"1":"2022-11-14","2":"25.35000","3":"27.9","4":"23.4"},{"1":"2022-11-15","2":"27.09583","3":"30.0","4":"23.6"},{"1":"2022-11-16","2":"23.84583","3":"25.0","4":"22.8"},{"1":"2022-11-17","2":"23.86250","3":"27.4","4":"21.6"},{"1":"2022-11-18","2":"23.21667","3":"26.7","4":"21.3"},{"1":"2022-11-19","2":"23.51250","3":"28.3","4":"20.8"},{"1":"2022-11-20","2":"24.47500","3":"29.8","4":"20.9"},{"1":"2022-11-21","2":"25.40417","3":"31.7","4":"22.0"},{"1":"2022-11-22","2":"24.95417","3":"29.9","4":"22.7"},{"1":"2022-11-23","2":"23.97917","3":"27.3","4":"21.9"},{"1":"2022-11-24","2":"21.67083","3":"23.8","4":"19.5"},{"1":"2022-11-25","2":"22.99167","3":"24.9","4":"21.8"},{"1":"2022-11-26","2":"23.59583","3":"26.4","4":"22.1"},{"1":"2022-11-27","2":"23.10000","3":"26.5","4":"20.2"},{"1":"2022-11-28","2":"24.50000","3":"30.1","4":"22.5"},{"1":"2022-11-29","2":"24.55833","3":"30.1","4":"22.7"},{"1":"2022-11-30","2":"24.29167","3":"29.4","4":"22.4"},{"1":"2022-12-01","2":"24.28750","3":"29.0","4":"20.9"},{"1":"2022-12-02","2":"23.59167","3":"26.9","4":"21.0"},{"1":"2022-12-03","2":"22.75000","3":"25.4","4":"20.4"},{"1":"2022-12-04","2":"23.67083","3":"25.6","4":"21.1"},{"1":"2022-12-05","2":"24.30833","3":"28.6","4":"20.5"},{"1":"2022-12-06","2":"23.13333","3":"26.6","4":"20.7"},{"1":"2022-12-07","2":"22.77917","3":"24.3","4":"21.0"},{"1":"2022-12-08","2":"23.70417","3":"26.8","4":"21.4"},{"1":"2022-12-09","2":"24.72917","3":"28.3","4":"21.8"},{"1":"2022-12-10","2":"25.31250","3":"29.9","4":"22.1"},{"1":"2022-12-11","2":"25.95833","3":"29.4","4":"23.8"},{"1":"2022-12-12","2":"27.08750","3":"33.2","4":"24.3"},{"1":"2022-12-13","2":"26.16667","3":"30.6","4":"22.8"},{"1":"2022-12-14","2":"23.85417","3":"27.4","4":"20.2"},{"1":"2022-12-15","2":"24.45417","3":"30.2","4":"21.2"},{"1":"2022-12-16","2":"24.73750","3":"30.7","4":"21.9"},{"1":"2022-12-17","2":"23.94583","3":"26.0","4":"23.2"},{"1":"2022-12-18","2":"23.23750","3":"24.3","4":"22.2"},{"1":"2022-12-19","2":"23.16667","3":"24.1","4":"22.5"},{"1":"2022-12-20","2":"20.89167","3":"22.6","4":"19.6"},{"1":"2022-12-21","2":"21.54348","3":"23.7","4":"20.9"},{"1":"2022-12-22","2":"22.05417","3":"24.7","4":"20.1"},{"1":"2022-12-23","2":"22.60833","3":"27.5","4":"19.9"},{"1":"2022-12-24","2":"22.78750","3":"26.5","4":"20.5"},{"1":"2022-12-25","2":"23.08333","3":"27.2","4":"21.0"},{"1":"2022-12-26","2":"24.06667","3":"25.2","4":"22.1"},{"1":"2022-12-27","2":"24.11667","3":"28.0","4":"21.3"},{"1":"2022-12-28","2":"24.25833","3":"27.6","4":"21.7"},{"1":"2022-12-29","2":"26.07500","3":"30.4","4":"23.1"},{"1":"2022-12-30","2":"22.20000","3":"23.3","4":"20.9"},{"1":"2022-12-31","2":"23.64167","3":"27.7","4":"20.5"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Já verificamos que o ano de 2023 foi mais quente em média, agora nos
+resta verficar quais foram os meses mais quentes. Podemos verificar
+facilmente usando o último agrupamento mensal.</p>
+<pre class="r"><code>agrupamento_mensal_2022</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["mes"],"name":[1],"type":["dttm"],"align":["right"]},{"label":["Media_Temperatura"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Maxima_Temperatura"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Minima_Temperatura"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"2022-01-01","2":"25.10712","3":"36.8","4":"20.1"},{"1":"2022-02-01","2":"25.49881","3":"32.1","4":"20.9"},{"1":"2022-03-01","2":"26.09866","3":"33.8","4":"21.5"},{"1":"2022-04-01","2":"24.56194","3":"35.3","4":"19.1"},{"1":"2022-05-01","2":"22.88484","3":"33.4","4":"17.5"},{"1":"2022-06-01","2":"20.89915","3":"29.0","4":"17.0"},{"1":"2022-07-01","2":"22.70338","3":"31.4","4":"18.4"},{"1":"2022-08-01","2":"21.34937","3":"35.4","4":"15.4"},{"1":"2022-09-01","2":"20.33067","3":"35.2","4":"16.3"},{"1":"2022-10-01","2":"23.53905","3":"32.3","4":"19.1"},{"1":"2022-11-01","2":"23.07056","3":"31.7","4":"16.3"},{"1":"2022-12-01","2":"23.81602","3":"33.2","4":"19.6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>agrupamento_mensal_2023</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["mes"],"name":[1],"type":["dttm"],"align":["right"]},{"label":["Media_Temperatura"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Maxima_Temperatura"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Minima_Temperatura"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"2023-01-01","2":"25.29906","3":"34.7","4":"18.8"},{"1":"2023-02-01","2":"26.49970","3":"33.6","4":"21.7"},{"1":"2023-03-01","2":"26.27648","3":"33.8","4":"21.7"},{"1":"2023-04-01","2":"24.28958","3":"29.8","4":"20.8"},{"1":"2023-05-01","2":"22.75860","3":"29.2","4":"17.7"},{"1":"2023-06-01","2":"22.34139","3":"30.8","4":"18.1"},{"1":"2023-07-01","2":"21.58718","3":"35.3","4":"16.8"},{"1":"2023-08-01","2":"22.31613","3":"38.2","4":"15.8"},{"1":"2023-09-01","2":"23.88679","3":"38.3","4":"17.2"},{"1":"2023-10-01","2":"23.46855","3":"34.5","4":"19.2"},{"1":"2023-11-01","2":"24.99014","3":"31.9","4":"20.1"},{"1":"2023-12-01","2":"25.34038","3":"33.5","4":"19.8"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Em ambos os anos os meses de fevereiro e março foram os mais quentes.
+Já em 2023 os meses de julho e agosto foram os mais frios, em 2022 foram
+Setembro e Junho.</p>
+<p>Podemos fazer outras análises com base nos agrupamentos mensais, como
+verificar quais foram os meses mais chuvosos do ano utilizando a coluna
+PRECIPITAÇÃO TOTAL, HORÁRIO (mm).</p>
+<pre class="r"><code>agrupamento_mensal_2022_precipitacao &lt;- dados_clima_2022 %&gt;%
+  group_by(mes = floor_date(datetime, &quot;month&quot;)) %&gt;%
+  summarise(
+    Media_Precipitacao = mean(`PRECIPITAÇÃO TOTAL, HORÁRIO (mm)`, na.rm = TRUE),
+    Maxima_Precipitacao = max(`PRECIPITAÇÃO TOTAL, HORÁRIO (mm)`, na.rm = TRUE),
+    Minima_Precipitacao = min(`PRECIPITAÇÃO TOTAL, HORÁRIO (mm)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )
+
+agrupamento_mensal_2023_precipitacao &lt;- dados_clima_2023 %&gt;%
+  group_by(mes = floor_date(datetime, &quot;month&quot;)) %&gt;%
+  summarise(
+    Media_Precipitacao = mean(`PRECIPITAÇÃO TOTAL, HORÁRIO (mm)`, na.rm = TRUE),
+    Maxima_Precipitacao = max(`PRECIPITAÇÃO TOTAL, HORÁRIO (mm)`, na.rm = TRUE),
+    Minima_Precipitacao = min(`PRECIPITAÇÃO TOTAL, HORÁRIO (mm)`, na.rm = TRUE),
+    .groups = &quot;drop&quot;
+  )</code></pre>
+<pre class="r"><code>agrupamento_mensal_2023_precipitacao</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["mes"],"name":[1],"type":["dttm"],"align":["right"]},{"label":["Media_Precipitacao"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Maxima_Precipitacao"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Minima_Precipitacao"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"2023-01-01","2":"0.22365591","3":"22.8","4":"0"},{"1":"2023-02-01","2":"0.28095238","3":"64.4","4":"0"},{"1":"2023-03-01","2":"0.12204301","3":"34.2","4":"0"},{"1":"2023-04-01","2":"0.18611111","3":"30.6","4":"0"},{"1":"2023-05-01","2":"0.12849462","3":"14.8","4":"0"},{"1":"2023-06-01","2":"0.01666667","3":"5.2","4":"0"},{"1":"2023-07-01","2":"0.03913630","3":"6.0","4":"0"},{"1":"2023-08-01","2":"0.19489247","3":"16.0","4":"0"},{"1":"2023-09-01","2":"0.03282337","3":"4.4","4":"0"},{"1":"2023-10-01","2":"0.22258065","3":"17.8","4":"0"},{"1":"2023-11-01","2":"0.07416667","3":"8.4","4":"0"},{"1":"2023-12-01","2":"0.03903096","3":"18.6","4":"0"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>agrupamento_mensal_2022_precipitacao</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["mes"],"name":[1],"type":["dttm"],"align":["right"]},{"label":["Media_Precipitacao"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["Maxima_Precipitacao"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["Minima_Precipitacao"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"2022-01-01","2":"0.17607527","3":"11.6","4":"0"},{"1":"2022-02-01","2":"0.09107143","3":"9.6","4":"0"},{"1":"2022-03-01","2":"0.01102151","3":"2.6","4":"0"},{"1":"2022-04-01","2":"0.28638889","3":"60.4","4":"0"},{"1":"2022-05-01","2":"0.10771313","3":"17.4","4":"0"},{"1":"2022-06-01","2":"0.11737892","3":"5.0","4":"0"},{"1":"2022-07-01","2":"0.06189189","3":"12.2","4":"0"},{"1":"2022-08-01","2":"0.10517483","3":"8.4","4":"0"},{"1":"2022-09-01","2":"0.23833866","3":"5.6","4":"0"},{"1":"2022-10-01","2":"0.06000000","3":"13.2","4":"0"},{"1":"2022-11-01","2":"0.13916667","3":"6.0","4":"0"},{"1":"2022-12-01","2":"0.19676985","3":"10.6","4":"0"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Em 2022 o mês mais chuvoso foi Abril, enquanto em 2023 foi
+fevereiro.</p>
+</div>
 </div>
 
 

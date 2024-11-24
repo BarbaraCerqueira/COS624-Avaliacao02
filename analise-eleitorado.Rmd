@@ -342,15 +342,110 @@ print(estatisticas)
 
 ### Respostas as Perguntas Sugeridas
 
-Aqui serão calculadas as respostas para as perguntas sugeridas no trabalho. São elas:
+Aqui serão calculadas as respostas para as perguntas sugeridas no trabalho, para os dois estados considerados. São elas:
 
 - Qual o município com menos eleitores? 
 - Qual o município com mais eleitores, depois da capital? 
 - Qual a faixa de variação da quantidade de eleitores por município? 
 - Qual a faixa de variação da quantidade de eleitores por gênero?
 
-```{r}
 
+#### Estado: Espírito Santo
+
+```{r}
+mn_menos_eleitores_es <- eleitores_por_municipio_es %>%
+  filter(TOTAL_ELEITORES_ES == min(TOTAL_ELEITORES_ES, na.rm = TRUE))
+
+print(paste("O município do Espírito Santo com menos eleitores é", 
+            mn_menos_eleitores_es$NM_MUNICIPIO, 
+            ", com um total de", 
+            mn_menos_eleitores_es$TOTAL_ELEITORES_ES, 
+            "eleitores."))
 ```
 
+```{r}
+capital_es <- "VITÓRIA"
+
+mn_mais_eleitores_es <- eleitores_por_municipio_es %>%
+  filter(NM_MUNICIPIO != capital_es) %>%
+  arrange(desc(TOTAL_ELEITORES_ES)) %>%
+  slice(1)
+
+print(paste("O município do Espírito Santo com mais eleitores excluindo a capital é", 
+            mn_mais_eleitores_es$NM_MUNICIPIO, 
+            ", com um total de", 
+            mn_mais_eleitores_es$TOTAL_ELEITORES_ES, 
+            "eleitores."))
+print("Nota: A capital do Espírito Santo não é o município com mais eleitores do estado.")
+```
+
+```{r}
+variacao_municipios_es <- eleitores_por_municipio_es %>%
+  summarise(
+    faixa_variacao = max(TOTAL_ELEITORES_ES, na.rm = TRUE) - min(TOTAL_ELEITORES_ES, na.rm = TRUE),
+  )
+
+print(paste("A faixa de variação da quantidade de eleitores por município em Espírito Santo é", 
+            variacao_municipios_es$faixa_variacao))
+```
+
+```{r}
+variacao_genero_es <- contagem_genero_es %>%
+  summarise(
+    faixa_variacao = max(TOTAL_ELEITORES_ES, na.rm = TRUE) - min(TOTAL_ELEITORES_ES, na.rm = TRUE)
+  )
+
+print(paste("A faixa de variação da quantidade de eleitores por gênero em Espírito Santo é", 
+            variacao_genero_es$faixa_variacao))
+```
+
+
+#### Estado: Santa Catarina
+
+```{r}
+mn_menos_eleitores_sc <- eleitores_por_municipio_sc %>%
+  filter(TOTAL_ELEITORES_SC == min(TOTAL_ELEITORES_SC, na.rm = TRUE))
+
+print(paste("O município de Santa Catarina com menos eleitores é", 
+            mn_menos_eleitores_sc$NM_MUNICIPIO, 
+            ", com um total de", 
+            mn_menos_eleitores_sc$TOTAL_ELEITORES_SC, 
+            "eleitores."))
+```
+
+```{r}
+capital_sc <- "FLORIANÓPOLIS"
+
+mn_mais_eleitores_sc <- eleitores_por_municipio_sc %>%
+  filter(NM_MUNICIPIO != capital_sc) %>%
+  arrange(desc(TOTAL_ELEITORES_SC)) %>%
+  slice(1)
+
+print(paste("O município do Santa Catarina com mais eleitores excluindo a capital é", 
+            mn_mais_eleitores_sc$NM_MUNICIPIO, 
+            ", com um total de", 
+            mn_mais_eleitores_sc$TOTAL_ELEITORES_SC, 
+            "eleitores."))
+print("Nota: A capital de Santa Catarina não é o município com mais eleitores do estado.")
+```
+
+```{r}
+variacao_municipios_sc <- eleitores_por_municipio_sc %>%
+  summarise(
+    faixa_variacao = max(TOTAL_ELEITORES_SC, na.rm = TRUE) - min(TOTAL_ELEITORES_SC, na.rm = TRUE),
+  )
+
+print(paste("A faixa de variação da quantidade de eleitores por município em Santa Catarina é", 
+            variacao_municipios_sc$faixa_variacao))
+```
+
+```{r}
+variacao_genero_sc <- contagem_genero_sc %>%
+  summarise(
+    faixa_variacao = max(TOTAL_ELEITORES_SC, na.rm = TRUE) - min(TOTAL_ELEITORES_SC, na.rm = TRUE)
+  )
+
+print(paste("A faixa de variação da quantidade de eleitores por gênero em Santa Catarina é", 
+            variacao_genero_sc$faixa_variacao))
+```
 
